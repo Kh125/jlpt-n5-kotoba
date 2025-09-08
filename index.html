@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kotoba Revision</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-container {
+            perspective: 1000px;
+        }
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #f3f4f6;
+        }
+        .finish-animation {
+            animation: fadeInScale 0.8s ease-in-out forwards;
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main App Container -->
+    <div id="app" class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 md:p-10 flex flex-col items-center text-center">
+        
+        <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-600 mb-2">Kotoba Revision</h1>
+        <p class="text-gray-500 mb-8">Choose your revision style to begin.</p>
+
+        <!-- Lesson Selection Section -->
+        <div id="lesson-selection" class="w-full space-y-4">
+            <h2 class="text-xl font-bold mb-4">Select a Lesson or All</h2>
+            <div id="lesson-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button id="all-lessons-btn" class="lesson-btn bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
+                    All Lessons
+                </button>
+                <!-- Lesson buttons will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Mode Selection Section -->
+        <div id="mode-selection" class="w-full space-y-4 hidden relative">
+            <h2 class="text-xl font-bold mb-4">Choose a Revision Mode</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <button id="manual-word-mode-btn" class="mode-btn bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-emerald-600 transition-colors">
+                    Manual (Word First)
+                </button>
+                <button id="manual-meaning-mode-btn" class="mode-btn bg-rose-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-rose-600 transition-colors">
+                    Manual (Meaning First)
+                </button>
+                <button id="timed-word-mode-btn" class="mode-btn bg-sky-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-sky-600 transition-colors">
+                    Timed (Word First)
+                </button>
+                <button id="timed-meaning-mode-btn" class="mode-btn bg-purple-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-purple-600 transition-colors">
+                    Timed (Meaning First)
+                </button>
+            </div>
+
+            <!-- Customize Button is now centered and below the main mode buttons -->
+            <button id="customize-btn" class="w-full mt-4 text-indigo-500 font-semibold py-2 px-4 rounded-full border border-indigo-500 hover:bg-indigo-50 transition-colors">
+                Customize Timed Settings
+            </button>
+            
+            <button id="back-to-lessons-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
+                ← Back to Lessons
+            </button>
+        </div>
+
+        <!-- Timer Settings Section -->
+        <div id="settings-screen" class="w-full space-y-4 hidden">
+            <h2 class="text-xl font-bold text-gray-700">Customize Timed Mode</h2>
+            <p class="text-gray-500 text-sm mb-4">Set the timers for your timed revision sessions.</p>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="flex-1 w-full">
+                    <label for="flip-delay" class="block text-sm font-medium text-gray-600 mb-1">Flip Delay (seconds)</label>
+                    <input type="number" id="flip-delay" value="3" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex-1 w-full">
+                    <label for="next-delay" class="block text-sm font-medium text-gray-600 mb-1">Next Card Delay (seconds)</label>
+                    <input type="number" id="next-delay" value="2" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <button id="back-from-settings-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
+                ← Back to Modes
+            </button>
+        </div>
+
+        <!-- Flashcard & Revision Section -->
+        <div id="revision-section" class="w-full hidden flex flex-col items-center">
+            
+            <!-- The Flashcard -->
+            <div class="card-container relative w-full max-w-sm h-56 mb-8">
+                <div id="flashcard" class="flashcard">
+                    <!-- Card Front -->
+                    <div id="card-front" class="card-face">
+                        <p id="card-front-text" class="text-2xl font-bold text-gray-700 mb-2"></p>
+                    </div>
+                    <!-- Card Back -->
+                    <div id="card-back" class="card-face card-back">
+                        <p id="card-back-text" class="text-2xl font-bold text-gray-700 mb-2"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons for Revision -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <button id="previous-word-btn" class="flex-1 bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors">
+                    Previous Word
+                </button>
+                <button id="pause-btn" class="flex-1 bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors">
+                    Pause
+                </button>
+                <button id="restart-btn" class="flex-1 bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors">
+                    Restart
+                </button>
+                <button id="next-word-btn" class="flex-1 bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
+                    Next Word
+                </button>
+            </div>
+            <button id="back-from-revision-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
+                ← Back to Lessons
+            </button>
+
+            <!-- Status Messages & Timer -->
+            <p id="timer-display" class="mt-2 font-medium text-sm text-gray-500"></p>
+            <p id="status-message" class="mt-4 font-bold text-lg"></p>
+
+        </div>
+
+        <!-- Finish Screen -->
+        <div id="finish-screen" class="w-full hidden flex flex-col items-center justify-center h-full text-center">
+            <div class="finish-animation p-8 bg-white rounded-xl shadow-xl">
+                <p id="finish-message" class="text-3xl font-extrabold text-green-600 mb-2">🎉 Well Done! 🎉</p>
+                <p class="text-xl font-bold text-gray-700 mb-4">You've finished this set!</p>
+                <p id="finish-timer" class="text-gray-500">Returning to lessons in 5 seconds...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const vocabularyData = {
+            "Lesson 1": [
+                { kanji: "おはようございます", hiragana: "おはようございます", meaning: "Good morning" },
+                { kanji: "こんにちは", hiragana: "こんにちは", meaning: "Hello, Good afternoon" },
+                { kanji: "こんばんは", hiragana: "こんばんは", meaning: "Good evening" },
+                { kanji: "おやすみ", hiragana: "おやすみ", meaning: "Good night" },
+                { kanji: "さようなら", hiragana: "さようなら", meaning: "Goodbye" },
+                { kanji: "ありがとう", hiragana: "ありがとう", meaning: "Thank you" },
+                { kanji: "すみません", hiragana: "すみません", meaning: "Excuse me, Sorry" },
+                { kanji: "ごめんなさい", hiragana: "ごめんなさい", meaning: "I'm sorry" },
+                { kanji: "いただきます", hiragana: "いただきます", meaning: "I humbly receive (before eating)" },
+                { kanji: "ごちそうさまでした", hiragana: "ごちそうさまでした", meaning: "Thank you for the meal (after eating)" }
+            ],
+            "Lesson 2": [
+                { kanji: "はい", hiragana: "はい", meaning: "Yes" },
+                { kanji: "いいえ", hiragana: "いいえ", meaning: "No" },
+                { kanji: "おなまえは？", hiragana: "おなまえは？", meaning: "What is your name?" },
+                { kanji: "わたしは", hiragana: "わたしは", meaning: "I am..." },
+                { kanji: "せんせい", hiragana: "せんせい", meaning: "Teacher" },
+                { kanji: "がくせい", hiragana: "がくせい", meaning: "Student" },
+                { kanji: "ともだち", hiragana: "ともだち", meaning: "Friend" },
+                { kanji: "にほんご", hiragana: "にほんご", meaning: "Japanese language" },
+                { kanji: "えいご", hiragana: "えいご", meaning: "English language" },
+                { kanji: "しごと", hiragana: "しごと", meaning: "Work, job" }
+            ],
+            "Lesson 3": [
+                { kanji: "おげんきですか？", hiragana: "おげんきですか？", meaning: "How are you?" },
+                { kanji: "げんきです", hiragana: "げんきです", meaning: "I'm fine" },
+                { kanji: "おいくつですか？", hiragana: "おいくつですか？", meaning: "How old are you?" },
+                { kanji: "なんさいですか？", hiragana: "なんさいですか？", meaning: "How old are you?" },
+                { kanji: "かぞく", hiragana: "かぞく", meaning: "Family" },
+                { kanji: "おとうさん", hiragana: "おとうさん", meaning: "Father" },
+                { kanji: "おかあさん", hiragana: "おかあさん", meaning: "Mother" },
+                { kanji: "きょうだい", hiragana: "きょうだい", meaning: "Siblings" },
+                { kanji: "おにいさん", hiragana: "おにいさん", meaning: "Older brother" },
+                { kanji: "いもうと", hiragana: "いもうと", meaning: "Younger sister" }
+            ],
+            "Lesson 23": [
+                { kanji: "聞きます", hiragana: "ききます", dictionary: "聞く", meaning: "to ask; to listen" },
+                { kanji: "回します", hiragana: "まわします", dictionary: "回す", meaning: "to turn; to rotate" },
+                { kanji: "引きます", hiragana: "ひきます", dictionary: "引く", meaning: "to pull; to draw" },
+                { kanji: "変えます", hiragana: "かえます", dictionary: "変える", meaning: "to change; to exchange" },
+                { kanji: "触ります", hiragana: "さわります", dictionary: "触る", meaning: "to touch (something)" },
+                { kanji: "出ます", hiragana: "でます", dictionary: "出る", meaning: "to go out; to leave; to come out; to attend (depends on context)" },
+                { kanji: "歩きます", hiragana: "あるきます", dictionary: "歩く", meaning: "to walk" },
+                { kanji: "渡ります", hiragana: "わたります", dictionary: "渡る", meaning: "to cross (a bridge, road, etc.)" },
+                { kanji: "曲がります", hiragana: "まがります", dictionary: "曲がる", meaning: "to turn (left/right)" },
+                { kanji: "寂しい", hiragana: "さびしい", meaning: "lonely; lonesome" },
+                { kanji: "お湯", hiragana: "おゆ", meaning: "hot water" },
+                { kanji: "音", hiragana: "おと", meaning: "sound; noise" },
+                { kanji: "サイズ", hiragana: "サイズ", meaning: "size" },
+                { kanji: "故障", hiragana: "こしょう", meaning: "breakdown; failure (of a machine, car, etc.)" },
+                { kanji: "道", hiragana: "みち", meaning: "street; road; way" },
+                { kanji: "交差点", hiragana: "こうさてん", meaning: "intersection; crossing" },
+                { kanji: "信号", hiragana: "しんごう", meaning: "traffic light; signal" },
+                { kanji: "角", hiragana: "かど", meaning: "corner (of a street, building, etc.)" },
+                { kanji: "橋", hiragana: "はし", meaning: "bridge" },
+                { kanji: "駐車場", hiragana: "ちゅうしゃじょう", meaning: "parking lot" },
+                { kanji: "建物", hiragana: "たてもの", meaning: "building" },
+                { kanji: "何回も", hiragana: "なんかいも", meaning: "many times; over and over" },
+                { kanji: "―目", hiragana: "―め", meaning: "the ―th (used for order: e.g. いちばんめ = first, にばんめ = second, etc.)" }
+            ],
+            "Lesson 24": [
+                { kanji: "呉れます", hiragana: "くれます", dictionary: "くれる", meaning: "to give (to me / my family)" },
+                { kanji: "直します", hiragana: "なおします", dictionary: "直す", meaning: "to repair, fix, correct" },
+                { kanji: "連れて行きます", hiragana: "つれていきます", dictionary: "連れていく", meaning: "to take (a person) along" },
+                { kanji: "連れて来ます", hiragana: "つれてきます", dictionary: "連れてくる", meaning: "to bring (a person) along" },
+                { kanji: "送ります", hiragana: "おくります", dictionary: "送る", meaning: "to escort, accompany (a person); also “to send” (letters, parcels, etc.)" },
+                { kanji: "紹介します", hiragana: "しょうかいします", dictionary: "紹介する", meaning: "to introduce" },
+                { kanji: "案内します", hiragana: "あんないします", dictionary: "案内する", meaning: "to guide, show around, lead the way" },
+                { kanji: "説明します", hiragana: "せつめいする", dictionary: "説明する", meaning: "to explain" },
+                { kanji: "おじいさん", hiragana: "おじいさん", meaning: "grandfather; old man" },
+                { kanji: "おばあさん", hiragana: "おばあさん", meaning: "grandmother; old woman" },
+                { kanji: "じゅんび", hiragana: "じゅんび", meaning: "preparation" },
+                { kanji: "引っ越し", hiragana: "ひっこし", meaning: "moving (to a new house)" },
+                { kanji: "お菓子", hiragana: "おかし", meaning: "sweets; snacks" },
+                { kanji: "ホームステイ", hiragana: "ホームステイ", meaning: "homestay (living with a host family)" },
+                { kanji: "全部", hiragana: "ぜんぶ", meaning: "all; everything" },
+                { kanji: "自分で", hiragana: "じぶんで", meaning: "by oneself; do it yourself" },
+                { kanji: "他に", hiragana: "ほかに", meaning: "besides; in addition; other" }
+            ]
+        };
+
+        // --- DOM Elements ---
+        const lessonSelectionSection = document.getElementById('lesson-selection');
+        const modeSelectionSection = document.getElementById('mode-selection');
+        const settingsScreen = document.getElementById('settings-screen');
+        const revisionSection = document.getElementById('revision-section');
+        const finishScreen = document.getElementById('finish-screen');
+        const lessonButtonsContainer = document.getElementById('lesson-buttons');
+        const allLessonsBtn = document.getElementById('all-lessons-btn');
+        const customizeBtn = document.getElementById('customize-btn');
+        const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
+        const manualWordModeBtn = document.getElementById('manual-word-mode-btn');
+        const manualMeaningModeBtn = document.getElementById('manual-meaning-mode-btn');
+        const timedWordModeBtn = document.getElementById('timed-word-mode-btn');
+        const timedMeaningModeBtn = document.getElementById('timed-meaning-mode-btn');
+        const backToLessonsBtn = document.getElementById('back-to-lessons-btn');
+        const backFromRevisionBtn = document.getElementById('back-from-revision-btn');
+        const flashcard = document.getElementById('flashcard');
+        const cardFrontText = document.getElementById('card-front-text');
+        const cardBackText = document.getElementById('card-back-text');
+        const nextWordBtn = document.getElementById('next-word-btn');
+        const previousWordBtn = document.getElementById('previous-word-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const statusMessage = document.getElementById('status-message');
+        const timerDisplay = document.getElementById('timer-display');
+        const flipDelayInput = document.getElementById('flip-delay');
+        const nextDelayInput = document.getElementById('next-delay');
+        const pauseBtn = document.getElementById('pause-btn');
+
+        // --- State Variables ---
+        let currentLesson = null;
+        let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning'
+        let shuffledWords = [];
+        let currentIndex = 0;
+        let nextWordTimer = null;
+        let finishTimer = null;
+        let isPaused = false;
+        let isFlipped = false;
+        let timerSecondsLeft = 0;
+        let flipDelay = 0;
+        let nextDelay = 0;
+
+        // --- Functions ---
+        
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createLessonButtons() {
+            const lessonKeys = Object.keys(vocabularyData);
+            lessonKeys.forEach(key => {
+                const button = document.createElement('button');
+                button.textContent = key;
+                button.classList.add('lesson-btn', 'bg-sky-500', 'text-white', 'font-semibold', 'py-3', 'px-6', 'rounded-full', 'shadow-md', 'hover:bg-sky-600', 'transition-colors');
+                button.addEventListener('click', () => {
+                    currentLesson = key;
+                    showModeSelection();
+                });
+                lessonButtonsContainer.appendChild(button);
+            });
+        }
+
+        function clearTimers() {
+            if (nextWordTimer) clearInterval(nextWordTimer);
+            if (finishTimer) clearInterval(finishTimer);
+        }
+
+        function showLessonSelection() {
+            clearTimers();
+            isPaused = false;
+            pauseBtn.textContent = 'Pause';
+            lessonSelectionSection.classList.remove('hidden');
+            modeSelectionSection.classList.add('hidden');
+            settingsScreen.classList.add('hidden');
+            revisionSection.classList.add('hidden');
+            finishScreen.classList.add('hidden');
+            statusMessage.textContent = '';
+            timerDisplay.textContent = '';
+        }
+
+        function showModeSelection() {
+            lessonSelectionSection.classList.add('hidden');
+            modeSelectionSection.classList.remove('hidden');
+            settingsScreen.classList.add('hidden');
+        }
+
+        function showSettingsScreen() {
+            modeSelectionSection.classList.add('hidden');
+            settingsScreen.classList.remove('hidden');
+        }
+
+        function startRevision(mode) {
+            currentMode = mode;
+            modeSelectionSection.classList.add('hidden');
+            revisionSection.classList.remove('hidden');
+            finishScreen.classList.add('hidden');
+            
+            // Show/Hide pause button based on mode
+            if (currentMode.includes('timed')) {
+                pauseBtn.classList.remove('hidden');
+            } else {
+                pauseBtn.classList.add('hidden');
+            }
+
+            currentIndex = 0;
+            flipDelay = parseInt(flipDelayInput.value) || 3;
+            nextDelay = parseInt(nextDelayInput.value) || 2;
+            isPaused = false;
+            isFlipped = false;
+            timerSecondsLeft = flipDelay;
+            displayCurrentCard();
+        }
+        
+        function updateCardDisplay() {
+            const currentWord = shuffledWords[currentIndex];
+            const isWordFirst = currentMode.includes('word');
+            const frontText = isWordFirst ? 
+                (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`) : 
+                `<span class="text-3xl">${currentWord.meaning}</span>`;
+            
+            const backText = isWordFirst ? 
+                `<span class="text-2xl">${currentWord.meaning}</span>` : 
+                (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`);
+
+            cardFrontText.innerHTML = frontText;
+            cardBackText.innerHTML = backText;
+        }
+
+        function displayCurrentCard() {
+            clearTimers();
+            
+            // Un-flip the card immediately to show the front face
+            flashcard.classList.remove('is-flipped');
+
+            // Wait for a short moment to allow the un-flip animation to complete
+            setTimeout(() => {
+                // Reset status message
+                statusMessage.textContent = '';
+                
+                // Handle end of set
+                if (currentIndex >= shuffledWords.length) {
+                    revisionSection.classList.add('hidden');
+                    finishScreen.classList.remove('hidden');
+                    let finishTimerCounter = 5;
+                    const finishTimerDisplay = document.getElementById('finish-timer');
+                    finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                    
+                    finishTimer = setInterval(() => {
+                        finishTimerCounter--;
+                        finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                        if (finishTimerCounter <= 0) {
+                            clearInterval(finishTimer);
+                            showLessonSelection();
+                        }
+                    }, 1000);
+                    return;
+                }
+
+                // Handle button states for navigation
+                previousWordBtn.disabled = currentIndex === 0 || currentMode.includes('timed');
+                nextWordBtn.disabled = currentMode.includes('timed');
+
+                // Visually disable buttons for timed mode
+                previousWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed') || currentIndex === 0);
+                previousWordBtn.classList.toggle('hover:bg-gray-400', currentMode.includes('timed') || currentIndex === 0);
+                nextWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed'));
+                nextWordBtn.classList.toggle('hover:bg-indigo-600', !currentMode.includes('timed'));
+                nextWordBtn.classList.toggle('cursor-not-allowed', currentMode.includes('timed'));
+                
+                // Reset pause state and text on new card display
+                isPaused = false;
+                pauseBtn.textContent = 'Pause';
+                
+                updateCardDisplay();
+
+                // Timed mode logic
+                if (currentMode.includes('timed')) {
+                    isFlipped = false;
+                    timerSecondsLeft = flipDelay;
+                    timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                    nextWordTimer = setInterval(() => {
+                        if (!isPaused) {
+                            timerSecondsLeft--;
+                            if (!isFlipped) {
+                                timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                                if (timerSecondsLeft <= 0) {
+                                    flashcard.classList.add('is-flipped');
+                                    isFlipped = true;
+                                    timerSecondsLeft = nextDelay;
+                                }
+                            } else {
+                                timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
+                                if (timerSecondsLeft <= 0) {
+                                    currentIndex++;
+                                    displayCurrentCard();
+                                }
+                            }
+                        }
+                    }, 1000);
+                }
+            }, 100);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                pauseBtn.textContent = 'Resume';
+                timerDisplay.textContent = 'Paused';
+            } else {
+                pauseBtn.textContent = 'Pause';
+                if (currentMode.includes('timed')) {
+                    // Timer will resume automatically on the next setInterval tick
+                    if (!isFlipped) {
+                        timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                    } else {
+                        timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
+                    }
+                }
+            }
+        }
+
+
+        // --- Event Listeners ---
+        allLessonsBtn.addEventListener('click', () => {
+            currentLesson = 'all';
+            const allWords = Object.values(vocabularyData).flat();
+            shuffledWords = shuffleArray(allWords);
+            showModeSelection();
+        });
+
+        // Navigation between screens
+        customizeBtn.addEventListener('click', showSettingsScreen);
+        backFromSettingsBtn.addEventListener('click', showModeSelection);
+
+        // Mode selection
+        manualWordModeBtn.addEventListener('click', () => {
+            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
+            startRevision('manual-word');
+        });
+
+        manualMeaningModeBtn.addEventListener('click', () => {
+            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
+            startRevision('manual-meaning');
+        });
+
+        timedWordModeBtn.addEventListener('click', () => {
+            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
+            startRevision('timed-word');
+        });
+
+        timedMeaningModeBtn.addEventListener('click', () => {
+            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
+            startRevision('timed-meaning');
+        });
+
+        flashcard.addEventListener('click', () => {
+            if (!currentMode.includes('timed')) {
+                flashcard.classList.toggle('is-flipped');
+            }
+        });
+
+        backToLessonsBtn.addEventListener('click', showLessonSelection);
+        backFromRevisionBtn.addEventListener('click', showLessonSelection);
+        
+        restartBtn.addEventListener('click', () => {
+            clearTimers();
+            isPaused = false;
+            pauseBtn.textContent = 'Pause';
+            if (currentLesson === 'all') {
+                shuffledWords = shuffleArray(Object.values(vocabularyData).flat());
+            } else {
+                shuffledWords = shuffleArray(vocabularyData[currentLesson]);
+            }
+            startRevision(currentMode);
+        });
+
+        nextWordBtn.addEventListener('click', () => {
+            clearTimers();
+            if (currentIndex < shuffledWords.length - 1) {
+                currentIndex++;
+                displayCurrentCard();
+            }
+        });
+
+        previousWordBtn.addEventListener('click', () => {
+            clearTimers();
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayCurrentCard();
+            }
+        });
+        
+        pauseBtn.addEventListener('click', togglePause);
+
+        // Initial setup
+        createLessonButtons();
+    </script>
+
+</body>
+</html>
