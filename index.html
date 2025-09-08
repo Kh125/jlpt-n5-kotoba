@@ -57,6 +57,35 @@
                 transform: scale(1);
             }
         }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            background-color: #f0f4f8;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox-container:hover {
+            border-color: #6366f1;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .checkbox-container input {
+            transform: scale(1.5);
+            accent-color: #6366f1;
+            margin-right: 0.75rem;
+            cursor: pointer;
+        }
+        .checkbox-container span {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        #start-revision-btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
@@ -69,12 +98,15 @@
 
         <!-- Lesson Selection Section -->
         <div id="lesson-selection" class="w-full space-y-4">
-            <h2 class="text-xl font-bold mb-4">Select a Lesson or All</h2>
-            <div id="lesson-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button id="all-lessons-btn" class="lesson-btn bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
-                    All Lessons
+            <h2 class="text-xl font-bold mb-4">Select Lessons</h2>
+            <div id="lesson-checkboxes" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Lesson checkboxes will be dynamically added here -->
+            </div>
+            
+            <div class="flex flex-col items-center mt-6">
+                <button id="start-revision-btn" class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors w-full" disabled>
+                    Start Revision
                 </button>
-                <!-- Lesson buttons will be dynamically added here -->
             </div>
         </div>
 
@@ -128,6 +160,12 @@
         <!-- Flashcard & Revision Section -->
         <div id="revision-section" class="w-full hidden flex flex-col items-center">
             
+            <!-- New Word Count Display -->
+            <div class="mb-4 text-center">
+                <p id="progress-display" class="text-xl font-bold text-indigo-600"></p>
+                <p id="word-count-display" class="text-sm text-gray-500"></p>
+            </div>
+
             <!-- The Flashcard -->
             <div class="card-container relative w-full max-w-sm h-56 mb-8">
                 <div id="flashcard" class="flashcard">
@@ -216,6 +254,234 @@
                 { kanji: "おにいさん", hiragana: "おにいさん", meaning: "Older brother" },
                 { kanji: "いもうと", hiragana: "いもうと", meaning: "Younger sister" }
             ],
+            "Lesson 4": [
+                { kanji: "学校", hiragana: "がっこう", meaning: "School" },
+                { kanji: "学生", hiragana: "がくせい", meaning: "Student" },
+                { kanji: "先生", hiragana: "せんせい", meaning: "Teacher" },
+                { kanji: "本", hiragana: "ほん", meaning: "Book" },
+                { kanji: "机", hiragana: "つくえ", meaning: "Desk" },
+                { kanji: "椅子", hiragana: "いす", meaning: "Chair" },
+                { kanji: "鉛筆", hiragana: "えんぴつ", meaning: "Pencil" },
+                { kanji: "消しゴム", hiragana: "けしごむ", meaning: "Eraser" },
+                { kanji: "かばん", hiragana: "かばん", meaning: "Bag" },
+                { kanji: "ノート", hiragana: "ノート", meaning: "Notebook" }
+            ],
+            "Lesson 5": [
+                { kanji: "食べる", hiragana: "たべる", meaning: "to eat" },
+                { kanji: "飲む", hiragana: "のむ", meaning: "to drink" },
+                { kanji: "買う", hiragana: "かう", meaning: "to buy" },
+                { kanji: "見る", hiragana: "みる", meaning: "to see, to watch" },
+                { kanji: "聞く", hiragana: "きく", meaning: "to listen, to hear" },
+                { kanji: "書く", hiragana: "かく", meaning: "to write" },
+                { kanji: "読む", hiragana: "よむ", meaning: "to read" },
+                { kanji: "話す", hiragana: "はなす", meaning: "to speak" },
+                { kanji: "行く", hiragana: "いく", meaning: "to go" },
+                { kanji: "来る", hiragana: "くる", meaning: "to come" }
+            ],
+            "Lesson 6": [
+                { kanji: "家", hiragana: "いえ", meaning: "House" },
+                { kanji: "部屋", hiragana: "へや", meaning: "Room" },
+                { kanji: "台所", hiragana: "だいどころ", meaning: "Kitchen" },
+                { kanji: "風呂", hiragana: "ふろ", meaning: "Bath" },
+                { kanji: "トイレ", hiragana: "トイレ", meaning: "Toilet" },
+                { kanji: "ドア", hiragana: "ドア", meaning: "Door" },
+                { kanji: "窓", hiragana: "まど", meaning: "Window" },
+                { kanji: "電気", hiragana: "でんき", meaning: "Electricity, light" },
+                { kanji: "冷蔵庫", hiragana: "れいぞうこ", meaning: "Refrigerator" },
+                { kanji: "テレビ", hiragana: "テレビ", meaning: "Television" }
+            ],
+            "Lesson 7": [
+                { kanji: "好き", hiragana: "すき", meaning: "Likeable" },
+                { kanji: "嫌い", hiragana: "きらい", meaning: "Hateable" },
+                { kanji: "上手", hiragana: "じょうず", meaning: "Good at" },
+                { kanji: "下手", hiragana: "へた", meaning: "Bad at" },
+                { kanji: "元気", hiragana: "げんき", meaning: "Healthy, cheerful" },
+                { kanji: "暇", hiragana: "ひま", meaning: "Free time" },
+                { kanji: "便利", hiragana: "べんり", meaning: "Convenient" },
+                { kanji: "不便", hiragana: "ふべん", meaning: "Inconvenient" },
+                { kanji: "賑やか", hiragana: "にぎやか", meaning: "Lively" },
+                { kanji: "静か", hiragana: "しずか", meaning: "Quiet" }
+            ],
+            "Lesson 8": [
+                { kanji: "高い", hiragana: "たかい", meaning: "Tall, expensive" },
+                { kanji: "安い", hiragana: "やすい", meaning: "Cheap" },
+                { kanji: "大きい", hiragana: "おおきい", meaning: "Big" },
+                { kanji: "小さい", hiragana: "ちいさい", meaning: "Small" },
+                { kanji: "新しい", hiragana: "あたらしい", meaning: "New" },
+                { kanji: "古い", hiragana: "ふるい", meaning: "Old" },
+                { kanji: "美味しい", hiragana: "おいしい", meaning: "Delicious" },
+                { kanji: "不味い", hiragana: "まずい", meaning: "Bad-tasting" },
+                { kanji: "暑い", hiragana: "あつい", meaning: "Hot (weather)" },
+                { kanji: "寒い", hiragana: "さむい", meaning: "Cold (weather)" }
+            ],
+            "Lesson 9": [
+                { kanji: "時", hiragana: "とき", meaning: "Time" },
+                { kanji: "分", hiragana: "ふん", meaning: "Minute" },
+                { kanji: "午前", hiragana: "ごぜん", meaning: "AM" },
+                { kanji: "午後", hiragana: "ごご", meaning: "PM" },
+                { kanji: "今", hiragana: "いま", meaning: "Now" },
+                { kanji: "朝", hiragana: "あさ", meaning: "Morning" },
+                { kanji: "昼", hiragana: "ひる", meaning: "Noon, daytime" },
+                { kanji: "晩", hiragana: "ばん", meaning: "Evening" },
+                { kanji: "夜", hiragana: "よる", meaning: "Night" },
+                { kanji: "今日", hiragana: "きょう", meaning: "Today" }
+            ],
+            "Lesson 10": [
+                { kanji: "日", hiragana: "にち", meaning: "Day" },
+                { kanji: "週", hiragana: "しゅう", meaning: "Week" },
+                { kanji: "月", hiragana: "げつ", meaning: "Month" },
+                { kanji: "年", hiragana: "とし", meaning: "Year" },
+                { kanji: "先週", hiragana: "せんしゅう", meaning: "Last week" },
+                { kanji: "今週", hiragana: "こんしゅう", meaning: "This week" },
+                { kanji: "来週", hiragana: "らいしゅう", meaning: "Next week" },
+                { kanji: "先月", hiragana: "せんげつ", meaning: "Last month" },
+                { kanji: "今月", hiragana: "こんげつ", meaning: "This month" },
+                { kanji: "来月", hiragana: "らいげつ", meaning: "Next month" }
+            ],
+            "Lesson 11": [
+                { kanji: "行く", hiragana: "いく", meaning: "To go" },
+                { kanji: "来る", hiragana: "くる", meaning: "To come" },
+                { kanji: "帰る", hiragana: "かえる", meaning: "To return" },
+                { kanji: "食べる", hiragana: "たべる", meaning: "To eat" },
+                { kanji: "飲む", hiragana: "のむ", meaning: "To drink" },
+                { kanji: "寝る", hiragana: "ねる", meaning: "To sleep" },
+                { kanji: "起きる", hiragana: "おきる", meaning: "To wake up" },
+                { kanji: "見る", hiragana: "みる", meaning: "To see" },
+                { kanji: "聞く", hiragana: "きく", meaning: "To listen" },
+                { kanji: "話す", hiragana: "はなす", meaning: "To speak" }
+            ],
+            "Lesson 12": [
+                { kanji: "山", hiragana: "やま", meaning: "Mountain" },
+                { kanji: "川", hiragana: "かわ", meaning: "River" },
+                { kanji: "海", hiragana: "うみ", meaning: "Sea, Ocean" },
+                { kanji: "町", hiragana: "まち", meaning: "Town" },
+                { kanji: "村", hiragana: "むら", meaning: "Village" },
+                { kanji: "道", hiragana: "みち", meaning: "Road" },
+                { kanji: "空", hiragana: "そら", meaning: "Sky" },
+                { kanji: "天気", hiragana: "てんき", meaning: "Weather" },
+                { kanji: "晴れ", hiragana: "はれ", meaning: "Sunny weather" },
+                { kanji: "雨", hiragana: "あめ", meaning: "Rain" }
+            ],
+            "Lesson 13": [
+                { kanji: "電話", hiragana: "でんわ", meaning: "Telephone" },
+                { kanji: "手紙", hiragana: "てがみ", meaning: "Letter" },
+                { kanji: "写真", hiragana: "しゃしん", meaning: "Photograph" },
+                { kanji: "新聞", hiragana: "しんぶん", meaning: "Newspaper" },
+                { kanji: "雑誌", hiragana: "ざっし", meaning: "Magazine" },
+                { kanji: "辞書", hiragana: "じしょ", meaning: "Dictionary" },
+                { kanji: "地図", hiragana: "ちず", meaning: "Map" },
+                { kanji: "時計", hiragana: "とけい", meaning: "Clock, watch" },
+                { kanji: "傘", hiragana: "かさ", meaning: "Umbrella" },
+                { kanji: "鍵", hiragana: "かぎ", meaning: "Key" }
+            ],
+            "Lesson 14": [
+                { kanji: "電車", hiragana: "でんしゃ", meaning: "Train" },
+                { kanji: "バス", hiragana: "バス", meaning: "Bus" },
+                { kanji: "飛行機", hiragana: "ひこうき", meaning: "Airplane" },
+                { kanji: "車", hiragana: "くるま", meaning: "Car" },
+                { kanji: "自転車", hiragana: "じてんしゃ", meaning: "Bicycle" },
+                { kanji: "駅", hiragana: "えき", meaning: "Station" },
+                { kanji: "空港", hiragana: "くうこう", meaning: "Airport" },
+                { kanji: "バス停", hiragana: "バスてい", meaning: "Bus stop" },
+                { kanji: "切符", hiragana: "きっぷ", meaning: "Ticket" },
+                { kanji: "運賃", hiragana: "うんちん", meaning: "Fare" }
+            ],
+            "Lesson 15": [
+                { kanji: "銀行", hiragana: "ぎんこう", meaning: "Bank" },
+                { kanji: "郵便局", hiragana: "ゆうびんきょく", meaning: "Post office" },
+                { kanji: "病院", hiragana: "びょういん", meaning: "Hospital" },
+                { kanji: "図書館", hiragana: "としょかん", meaning: "Library" },
+                { kanji: "美術館", hiragana: "びじゅつかん", meaning: "Art museum" },
+                { kanji: "公園", hiragana: "こうえん", meaning: "Park" },
+                { kanji: "店", hiragana: "みせ", meaning: "Store" },
+                { kanji: "レストラン", hiragana: "レストラン", meaning: "Restaurant" },
+                { kanji: "駅", hiragana: "えき", meaning: "Station" },
+                { kanji: "ホテル", hiragana: "ホテル", meaning: "Hotel" }
+            ],
+            "Lesson 16": [
+                { kanji: "お金", hiragana: "おかね", meaning: "Money" },
+                { kanji: "円", hiragana: "えん", meaning: "Yen (Japanese currency)" },
+                { kanji: "買い物", hiragana: "かいもの", meaning: "Shopping" },
+                { kanji: "レシート", hiragana: "レシート", meaning: "Receipt" },
+                { kanji: "お釣り", hiragana: "おつり", meaning: "Change (money)" },
+                { kanji: "値段", hiragana: "ねだん", meaning: "Price" },
+                { kanji: "セール", hiragana: "セール", meaning: "Sale" },
+                { kanji: "クレジットカード", hiragana: "クレジットカード", meaning: "Credit card" },
+                { kanji: "現金", hiragana: "げんきん", meaning: "Cash" },
+                { kanji: "小銭", hiragana: "こぜに", meaning: "Small change" }
+            ],
+            "Lesson 17": [
+                { kanji: "家族", hiragana: "かぞく", meaning: "Family" },
+                { kanji: "両親", hiragana: "りょうしん", meaning: "Parents" },
+                { kanji: "父", hiragana: "ちち", meaning: "Father (my own)" },
+                { kanji: "母", hiragana: "はは", meaning: "Mother (my own)" },
+                { kanji: "兄", hiragana: "あに", meaning: "Older brother (my own)" },
+                { kanji: "姉", hiragana: "あね", meaning: "Older sister (my own)" },
+                { kanji: "弟", hiragana: "おとうと", meaning: "Younger brother (my own)" },
+                { kanji: "妹", hiragana: "いもうと", meaning: "Younger sister (my own)" },
+                { kanji: "兄弟", hiragana: "きょうだい", meaning: "Siblings" },
+                { kanji: "子供", hiragana: "こども", meaning: "Child" }
+            ],
+            "Lesson 18": [
+                { kanji: "友達", hiragana: "ともだち", meaning: "Friend" },
+                { kanji: "恋人", hiragana: "こいびと", meaning: "Lover, sweetheart" },
+                { kanji: "結婚", hiragana: "けっこん", meaning: "Marriage" },
+                { kanji: "誕生日", hiragana: "たんじょうび", meaning: "Birthday" },
+                { kanji: "仕事", hiragana: "しごと", meaning: "Work" },
+                { kanji: "勉強", hiragana: "べんきょう", meaning: "Study" },
+                { kanji: "趣味", hiragana: "しゅみ", meaning: "Hobby" },
+                { kanji: "スポーツ", hiragana: "スポーツ", meaning: "Sports" },
+                { kanji: "音楽", hiragana: "おんがく", meaning: "Music" },
+                { kanji: "映画", hiragana: "えいが", meaning: "Movie" }
+            ],
+            "Lesson 19": [
+                { kanji: "食べ物", hiragana: "たべもの", meaning: "Food" },
+                { kanji: "飲み物", hiragana: "のみもの", meaning: "Drink" },
+                { kanji: "ご飯", hiragana: "ごはん", meaning: "Cooked rice, meal" },
+                { kanji: "パン", hiragana: "パン", meaning: "Bread" },
+                { kanji: "肉", hiragana: "にく", meaning: "Meat" },
+                { kanji: "魚", hiragana: "さかな", meaning: "Fish" },
+                { kanji: "野菜", hiragana: "やさい", meaning: "Vegetable" },
+                { kanji: "果物", hiragana: "くだもの", meaning: "Fruit" },
+                { kanji: "水", hiragana: "みず", meaning: "Water" },
+                { kanji: "お茶", hiragana: "おちゃ", meaning: "Tea" }
+            ],
+            "Lesson 20": [
+                { kanji: "日本語", hiragana: "にほんご", meaning: "Japanese language" },
+                { kanji: "英語", hiragana: "えいご", meaning: "English language" },
+                { kanji: "中国語", hiragana: "ちゅうごくご", meaning: "Chinese language" },
+                { kanji: "韓国語", hiragana: "かんこくご", meaning: "Korean language" },
+                { kanji: "話す", hiragana: "はなす", meaning: "To speak" },
+                { kanji: "聞く", hiragana: "きく", meaning: "To listen" },
+                { kanji: "読む", hiragana: "よむ", meaning: "To read" },
+                { kanji: "書く", hiragana: "かく", meaning: "To write" },
+                { kanji: "わかる", hiragana: "わかる", meaning: "To understand" },
+                { kanji: "できる", hiragana: "できる", meaning: "Can do" }
+            ],
+            "Lesson 21": [
+                { kanji: "上", hiragana: "うえ", meaning: "On, above" },
+                { kanji: "下", hiragana: "した", meaning: "Under, below" },
+                { kanji: "中", hiragana: "なか", meaning: "Inside" },
+                { kanji: "外", hiragana: "そと", meaning: "Outside" },
+                { kanji: "前", hiragana: "まえ", meaning: "In front of, before" },
+                { kanji: "後ろ", hiragana: "うしろ", meaning: "Behind, back" },
+                { kanji: "右", hiragana: "みぎ", meaning: "Right" },
+                { kanji: "左", hiragana: "ひだり", meaning: "Left" },
+                { kanji: "隣", hiragana: "となり", meaning: "Next to" },
+                { kanji: "近く", hiragana: "ちかく", meaning: "Near" }
+            ],
+            "Lesson 22": [
+                { kanji: "動く", hiragana: "うごく", meaning: "To move" },
+                { kanji: "止まる", hiragana: "とまる", meaning: "To stop" },
+                { kanji: "入る", hiragana: "はいる", meaning: "To enter" },
+                { kanji: "出る", hiragana: "でる", meaning: "To exit" },
+                { kanji: "開ける", hiragana: "あける", meaning: "To open" },
+                { kanji: "閉める", hiragana: "しめる", meaning: "To close" },
+                { kanji: "始まる", hiragana: "はじまる", meaning: "To begin" },
+                { kanji: "終わる", hiragana: "おわる", meaning: "To end" },
+                { kanji: "使う", hiragana: "つかう", meaning: "To use" },
+                { kanji: "作る", hiragana: "つくる", meaning: "To make" }
+            ],
             "Lesson 23": [
                 { kanji: "聞きます", hiragana: "ききます", dictionary: "聞く", meaning: "to ask; to listen" },
                 { kanji: "回します", hiragana: "まわします", dictionary: "回す", meaning: "to turn; to rotate" },
@@ -259,6 +525,18 @@
                 { kanji: "全部", hiragana: "ぜんぶ", meaning: "all; everything" },
                 { kanji: "自分で", hiragana: "じぶんで", meaning: "by oneself; do it yourself" },
                 { kanji: "他に", hiragana: "ほかに", meaning: "besides; in addition; other" }
+            ],
+            "Lesson 25": [
+                { kanji: "〜によって", hiragana: "〜によって", meaning: "Depending on..." },
+                { kanji: "〜につれて", hiragana: "〜につれて", meaning: "As... (A changes, B changes)" },
+                { kanji: "〜につれて", hiragana: "〜につれて", meaning: "As (something changes, something else changes)" },
+                { kanji: "〜に応じて", hiragana: "〜におうじて", meaning: "According to..." },
+                { kanji: "〜に従って", hiragana: "〜にしたがって", meaning: "Following..." },
+                { kanji: "〜の限り", hiragana: "〜のかぎり", meaning: "As long as, to the extent that" },
+                { kanji: "〜に反して", hiragana: "〜にはんして", meaning: "Contrary to..." },
+                { kanji: "〜にわたって", hiragana: "〜にわたって", meaning: "Throughout, over (a period or area)" },
+                { kanji: "〜を中心に", hiragana: "〜をちゅうしんに", meaning: "Centering on..." },
+                { kanji: "〜に加えて", hiragana: "〜にくわえて", meaning: "In addition to..." }
             ]
         };
 
@@ -268,8 +546,8 @@
         const settingsScreen = document.getElementById('settings-screen');
         const revisionSection = document.getElementById('revision-section');
         const finishScreen = document.getElementById('finish-screen');
-        const lessonButtonsContainer = document.getElementById('lesson-buttons');
-        const allLessonsBtn = document.getElementById('all-lessons-btn');
+        const lessonCheckboxesContainer = document.getElementById('lesson-checkboxes');
+        const startRevisionBtn = document.getElementById('start-revision-btn');
         const customizeBtn = document.getElementById('customize-btn');
         const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
         const manualWordModeBtn = document.getElementById('manual-word-mode-btn');
@@ -290,8 +568,12 @@
         const nextDelayInput = document.getElementById('next-delay');
         const pauseBtn = document.getElementById('pause-btn');
 
+        // New DOM Elements for word count
+        const progressDisplay = document.getElementById('progress-display');
+        const wordCountDisplay = document.getElementById('word-count-display');
+
         // --- State Variables ---
-        let currentLesson = null;
+        let selectedLessons = [];
         let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning'
         let shuffledWords = [];
         let currentIndex = 0;
@@ -314,17 +596,23 @@
             return array;
         }
 
-        function createLessonButtons() {
+        function createLessonCheckboxes() {
             const lessonKeys = Object.keys(vocabularyData);
             lessonKeys.forEach(key => {
-                const button = document.createElement('button');
-                button.textContent = key;
-                button.classList.add('lesson-btn', 'bg-sky-500', 'text-white', 'font-semibold', 'py-3', 'px-6', 'rounded-full', 'shadow-md', 'hover:bg-sky-600', 'transition-colors');
-                button.addEventListener('click', () => {
-                    currentLesson = key;
-                    showModeSelection();
-                });
-                lessonButtonsContainer.appendChild(button);
+                const container = document.createElement('label');
+                container.classList.add('checkbox-container');
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'lesson';
+                checkbox.value = key;
+
+                const span = document.createElement('span');
+                span.textContent = key;
+
+                container.appendChild(checkbox);
+                container.appendChild(span);
+                lessonCheckboxesContainer.appendChild(container);
             });
         }
 
@@ -356,6 +644,20 @@
             modeSelectionSection.classList.add('hidden');
             settingsScreen.classList.remove('hidden');
         }
+        
+        function handleStartRevision() {
+            selectedLessons = Array.from(document.querySelectorAll('input[name="lesson"]:checked')).map(cb => cb.value);
+            
+            if (selectedLessons.length === 0) {
+                // Should not happen as button is disabled, but for safety
+                return;
+            }
+            
+            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[lessonKey]);
+            shuffledWords = shuffleArray(wordsToShuffle);
+
+            showModeSelection();
+        }
 
         function startRevision(mode) {
             currentMode = mode;
@@ -363,7 +665,6 @@
             revisionSection.classList.remove('hidden');
             finishScreen.classList.add('hidden');
             
-            // Show/Hide pause button based on mode
             if (currentMode.includes('timed')) {
                 pauseBtn.classList.remove('hidden');
             } else {
@@ -376,12 +677,16 @@
             isPaused = false;
             isFlipped = false;
             timerSecondsLeft = flipDelay;
+            
+            // Set the total word count and initial progress
+            wordCountDisplay.textContent = `Total words: ${shuffledWords.length}`;
             displayCurrentCard();
         }
         
         function updateCardDisplay() {
             const currentWord = shuffledWords[currentIndex];
             const isWordFirst = currentMode.includes('word');
+            
             const frontText = isWordFirst ? 
                 (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`) : 
                 `<span class="text-3xl">${currentWord.meaning}</span>`;
@@ -390,22 +695,28 @@
                 `<span class="text-2xl">${currentWord.meaning}</span>` : 
                 (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`);
 
+            // Update the visible front text immediately
             cardFrontText.innerHTML = frontText;
+
+            // This is the key change to fix the visual bug.
+            // We delay updating the back text until we are ready to flip,
+            // to prevent the new text from being briefly visible.
             cardBackText.innerHTML = backText;
         }
 
         function displayCurrentCard() {
             clearTimers();
             
-            // Un-flip the card immediately to show the front face
             flashcard.classList.remove('is-flipped');
+            
+            // Update the progress display
+            progressDisplay.textContent = `Word ${currentIndex + 1} of ${shuffledWords.length}`;
 
-            // Wait for a short moment to allow the un-flip animation to complete
+            // Wait for the CSS transition to complete before showing the next card.
+            // This prevents the new content from flashing prematurely.
             setTimeout(() => {
-                // Reset status message
                 statusMessage.textContent = '';
                 
-                // Handle end of set
                 if (currentIndex >= shuffledWords.length) {
                     revisionSection.classList.add('hidden');
                     finishScreen.classList.remove('hidden');
@@ -424,24 +735,20 @@
                     return;
                 }
 
-                // Handle button states for navigation
                 previousWordBtn.disabled = currentIndex === 0 || currentMode.includes('timed');
                 nextWordBtn.disabled = currentMode.includes('timed');
 
-                // Visually disable buttons for timed mode
                 previousWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed') || currentIndex === 0);
                 previousWordBtn.classList.toggle('hover:bg-gray-400', currentMode.includes('timed') || currentIndex === 0);
                 nextWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed'));
                 nextWordBtn.classList.toggle('hover:bg-indigo-600', !currentMode.includes('timed'));
                 nextWordBtn.classList.toggle('cursor-not-allowed', currentMode.includes('timed'));
                 
-                // Reset pause state and text on new card display
                 isPaused = false;
                 pauseBtn.textContent = 'Pause';
                 
                 updateCardDisplay();
 
-                // Timed mode logic
                 if (currentMode.includes('timed')) {
                     isFlipped = false;
                     timerSecondsLeft = flipDelay;
@@ -477,7 +784,6 @@
             } else {
                 pauseBtn.textContent = 'Pause';
                 if (currentMode.includes('timed')) {
-                    // Timer will resume automatically on the next setInterval tick
                     if (!isFlipped) {
                         timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
                     } else {
@@ -487,39 +793,20 @@
             }
         }
 
-
         // --- Event Listeners ---
-        allLessonsBtn.addEventListener('click', () => {
-            currentLesson = 'all';
-            const allWords = Object.values(vocabularyData).flat();
-            shuffledWords = shuffleArray(allWords);
-            showModeSelection();
+        lessonCheckboxesContainer.addEventListener('change', () => {
+            const checkedCount = document.querySelectorAll('input[name="lesson"]:checked').length;
+            startRevisionBtn.disabled = checkedCount === 0;
         });
 
-        // Navigation between screens
+        startRevisionBtn.addEventListener('click', handleStartRevision);
         customizeBtn.addEventListener('click', showSettingsScreen);
         backFromSettingsBtn.addEventListener('click', showModeSelection);
 
-        // Mode selection
-        manualWordModeBtn.addEventListener('click', () => {
-            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
-            startRevision('manual-word');
-        });
-
-        manualMeaningModeBtn.addEventListener('click', () => {
-            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
-            startRevision('manual-meaning');
-        });
-
-        timedWordModeBtn.addEventListener('click', () => {
-            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
-            startRevision('timed-word');
-        });
-
-        timedMeaningModeBtn.addEventListener('click', () => {
-            shuffledWords = shuffleArray(currentLesson === 'all' ? Object.values(vocabularyData).flat() : vocabularyData[currentLesson]);
-            startRevision('timed-meaning');
-        });
+        manualWordModeBtn.addEventListener('click', () => startRevision('manual-word'));
+        manualMeaningModeBtn.addEventListener('click', () => startRevision('manual-meaning'));
+        timedWordModeBtn.addEventListener('click', () => startRevision('timed-word'));
+        timedMeaningModeBtn.addEventListener('click', () => startRevision('timed-meaning'));
 
         flashcard.addEventListener('click', () => {
             if (!currentMode.includes('timed')) {
@@ -534,11 +821,9 @@
             clearTimers();
             isPaused = false;
             pauseBtn.textContent = 'Pause';
-            if (currentLesson === 'all') {
-                shuffledWords = shuffleArray(Object.values(vocabularyData).flat());
-            } else {
-                shuffledWords = shuffleArray(vocabularyData[currentLesson]);
-            }
+            
+            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[lessonKey]);
+            shuffledWords = shuffleArray(wordsToShuffle);
             startRevision(currentMode);
         });
 
@@ -561,7 +846,7 @@
         pauseBtn.addEventListener('click', togglePause);
 
         // Initial setup
-        createLessonButtons();
+        createLessonCheckboxes();
     </script>
 
 </body>
