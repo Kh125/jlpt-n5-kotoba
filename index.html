@@ -82,13 +82,6 @@
         .checkbox-container.selected:hover {
             background-color: #4f46e5;
         }
-        .checkbox-container input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
         .checkbox-container span {
             font-weight: 600;
             color: #4a5568;
@@ -112,8 +105,21 @@
         <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-600 mb-2">Kotoba Revision</h1>
         <p class="text-gray-500 mb-8">Choose your revision style to begin.</p>
 
+        <!-- Level Selection Section -->
+        <div id="level-selection" class="w-full space-y-4">
+            <h2 class="text-xl font-bold mb-4">Select Level</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button id="n5-level-btn" class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
+                    N5 Lessons (1-25)
+                </button>
+                <button id="n4-level-btn" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-emerald-600 transition-colors">
+                    N4 Lessons (26-50)
+                </button>
+            </div>
+        </div>
+
         <!-- Lesson Selection Section -->
-        <div id="lesson-selection" class="w-full space-y-4">
+        <div id="lesson-selection" class="w-full space-y-4 hidden">
             <h2 class="text-xl font-bold mb-4">Select Lessons</h2>
             <div id="lesson-checkboxes" class="grid grid-cols-5 md:grid-cols-7 gap-4 justify-center">
                 <!-- Lesson checkboxes will be dynamically added here -->
@@ -124,6 +130,9 @@
                     Start Revision
                 </button>
             </div>
+            <button id="back-to-levels-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
+                ← Back to Levels
+            </button>
         </div>
 
         <!-- Mode Selection Section -->
@@ -143,6 +152,12 @@
                     Timed (Meaning First)
                 </button>
             </div>
+            <button id="list-view-btn" class="mode-btn bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors w-full">
+                List View
+            </button>
+            <button id="review-later-btn" class="mode-btn bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors w-full mt-4" disabled>
+                Review Marked Words (<span id="later-list-count">0</span>)
+            </button>
 
             <!-- Customize Button is now centered and below the main mode buttons -->
             <button id="customize-btn" class="w-full mt-4 text-indigo-500 font-semibold py-2 px-4 rounded-full border border-indigo-500 hover:bg-indigo-50 transition-colors">
@@ -211,6 +226,9 @@
                     Next Word
                 </button>
             </div>
+            <button id="mark-for-later-btn" class="bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors w-full mt-4">
+                Mark for later
+            </button>
             <button id="back-from-revision-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
                 ← Back to Lessons
             </button>
@@ -219,6 +237,17 @@
             <p id="timer-display" class="mt-2 font-medium text-sm text-gray-500"></p>
             <p id="status-message" class="mt-4 font-bold text-lg"></p>
 
+        </div>
+
+        <!-- List View Section -->
+        <div id="list-view-section" class="w-full hidden space-y-6">
+            <h2 class="text-2xl font-bold text-indigo-600">Vocabulary List</h2>
+            <div id="word-list-container" class="w-full space-y-4 text-left">
+                <!-- Word list will be dynamically populated here -->
+            </div>
+            <button id="back-from-list-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
+                ← Back to Lessons
+            </button>
         </div>
 
         <!-- Finish Screen -->
@@ -233,444 +262,582 @@
     </div>
 
     <script>
+        // --- Vocabulary Data ---
+        // Restructured to support multiple levels
         const vocabularyData = {
-            "Lesson 1": [
-                { kanji: "おはようございます", hiragana: "おはようございます", meaning: "Good morning" },
-                { kanji: "こんにちは", hiragana: "こんにちは", meaning: "Hello, Good afternoon" },
-                { kanji: "こんばんは", hiragana: "こんばんは", meaning: "Good evening" },
-                { kanji: "おやすみ", hiragana: "おやすみ", meaning: "Good night" },
-                { kanji: "さようなら", hiragana: "さようなら", meaning: "Goodbye" },
-                { kanji: "ありがとう", hiragana: "ありがとう", meaning: "Thank you" },
-                { kanji: "すみません", hiragana: "すみません", meaning: "Excuse me, Sorry" },
-                { kanji: "ごめんなさい", hiragana: "ごめんなさい", meaning: "I'm sorry" },
-                { kanji: "いただきます", hiragana: "いただきます", meaning: "I humbly receive (before eating)" },
-                { kanji: "ごちそうさまでした", hiragana: "ごちそうさまでした", meaning: "Thank you for the meal (after eating)" }
-            ],
-            "Lesson 2": [
-                { kanji: "はい", hiragana: "はい", meaning: "Yes" },
-                { kanji: "いいえ", hiragana: "いいえ", meaning: "No" },
-                { kanji: "おなまえは？", hiragana: "おなまえは？", meaning: "What is your name?" },
-                { kanji: "わたしは", hiragana: "わたしは", meaning: "I am..." },
-                { kanji: "せんせい", hiragana: "せんせい", meaning: "Teacher" },
-                { kanji: "がくせい", hiragana: "がくせい", meaning: "Student" },
-                { kanji: "ともだち", hiragana: "ともだち", meaning: "Friend" },
-                { kanji: "にほんご", hiragana: "にほんご", meaning: "Japanese language" },
-                { kanji: "えいご", hiragana: "えいご", meaning: "English language" },
-                { kanji: "しごと", hiragana: "しごと", meaning: "Work, job" }
-            ],
-            "Lesson 3": [
-                { kanji: "おげんきですか？", hiragana: "おげんきですか？", meaning: "How are you?" },
-                { kanji: "げんきです", hiragana: "げんきです", meaning: "I'm fine" },
-                { kanji: "おいくつですか？", hiragana: "おいくつですか？", meaning: "How old are you?" },
-                { kanji: "なんさいですか？", hiragana: "なんさいですか？", meaning: "How old are you?" },
-                { kanji: "かぞく", hiragana: "かぞく", meaning: "Family" },
-                { kanji: "おとうさん", hiragana: "おとうさん", meaning: "Father" },
-                { kanji: "おかあさん", hiragana: "おかあさん", meaning: "Mother" },
-                { kanji: "きょうだい", hiragana: "きょうだい", meaning: "Siblings" },
-                { kanji: "おにいさん", hiragana: "おにいさん", meaning: "Older brother" },
-                { kanji: "いもうと", hiragana: "いもうと", meaning: "Younger sister" }
-            ],
-            "Lesson 4": [
-                { kanji: "学校", hiragana: "がっこう", meaning: "School" },
-                { kanji: "学生", hiragana: "がくせい", meaning: "Student" },
-                { kanji: "先生", hiragana: "せんせい", meaning: "Teacher" },
-                { kanji: "本", hiragana: "ほん", meaning: "Book" },
-                { kanji: "机", hiragana: "つくえ", meaning: "Desk" },
-                { kanji: "椅子", hiragana: "いす", meaning: "Chair" },
-                { kanji: "鉛筆", hiragana: "えんぴつ", meaning: "Pencil" },
-                { kanji: "消しゴム", hiragana: "けしごむ", meaning: "Eraser" },
-                { kanji: "かばん", hiragana: "かばん", meaning: "Bag" },
-                { kanji: "ノート", hiragana: "ノート", meaning: "Notebook" }
-            ],
-            "Lesson 5": [
-                { kanji: "食べる", hiragana: "たべる", meaning: "to eat" },
-                { kanji: "飲む", hiragana: "のむ", meaning: "to drink" },
-                { kanji: "買う", hiragana: "かう", meaning: "to buy" },
-                { kanji: "見る", hiragana: "みる", meaning: "to see, to watch" },
-                { kanji: "聞く", hiragana: "きく", meaning: "to listen, to hear" },
-                { kanji: "書く", hiragana: "かく", meaning: "to write" },
-                { kanji: "読む", hiragana: "よむ", meaning: "to read" },
-                { kanji: "話す", hiragana: "はなす", meaning: "to speak" },
-                { kanji: "行く", hiragana: "いく", meaning: "to go" },
-                { kanji: "来る", hiragana: "くる", meaning: "to come" }
-            ],
-            "Lesson 6": [
-                { kanji: "家", hiragana: "いえ", meaning: "House" },
-                { kanji: "部屋", hiragana: "へや", meaning: "Room" },
-                { kanji: "台所", hiragana: "だいどころ", meaning: "Kitchen" },
-                { kanji: "風呂", hiragana: "ふろ", meaning: "Bath" },
-                { kanji: "トイレ", hiragana: "トイレ", meaning: "Toilet" },
-                { kanji: "ドア", hiragana: "ドア", meaning: "Door" },
-                { kanji: "窓", hiragana: "まど", meaning: "Window" },
-                { kanji: "電気", hiragana: "でんき", meaning: "Electricity, light" },
-                { kanji: "冷蔵庫", hiragana: "れいぞうこ", meaning: "Refrigerator" },
-                { kanji: "テレビ", hiragana: "テレビ", meaning: "Television" }
-            ],
-            "Lesson 7": [
-                { kanji: "好き", hiragana: "すき", meaning: "Likeable" },
-                { kanji: "嫌い", hiragana: "きらい", meaning: "Hateable" },
-                { kanji: "上手", hiragana: "じょうず", meaning: "Good at" },
-                { kanji: "下手", hiragana: "へた", meaning: "Bad at" },
-                { kanji: "元気", hiragana: "げんき", meaning: "Healthy, cheerful" },
-                { kanji: "暇", hiragana: "ひま", meaning: "Free time" },
-                { kanji: "便利", hiragana: "べんり", meaning: "Convenient" },
-                { kanji: "不便", hiragana: "ふべん", meaning: "Inconvenient" },
-                { kanji: "賑やか", hiragana: "にぎやか", meaning: "Lively" },
-                { kanji: "静か", hiragana: "しずか", meaning: "Quiet" }
-            ],
-            "Lesson 8": [
-                { kanji: "高い", hiragana: "たかい", meaning: "Tall, expensive" },
-                { kanji: "安い", hiragana: "やすい", meaning: "Cheap" },
-                { kanji: "大きい", hiragana: "おおきい", meaning: "Big" },
-                { kanji: "小さい", hiragana: "ちいさい", meaning: "Small" },
-                { kanji: "新しい", hiragana: "あたらしい", meaning: "New" },
-                { kanji: "古い", hiragana: "ふるい", meaning: "Old" },
-                { kanji: "美味しい", hiragana: "おいしい", meaning: "Delicious" },
-                { kanji: "不味い", hiragana: "まずい", meaning: "Bad-tasting" },
-                { kanji: "暑い", hiragana: "あつい", meaning: "Hot (weather)" },
-                { kanji: "寒い", hiragana: "さむい", meaning: "Cold (weather)" }
-            ],
-            "Lesson 9": [
-                { kanji: "時", hiragana: "とき", meaning: "Time" },
-                { kanji: "分", hiragana: "ふん", meaning: "Minute" },
-                { kanji: "午前", hiragana: "ごぜん", meaning: "AM" },
-                { kanji: "午後", hiragana: "ごご", meaning: "PM" },
-                { kanji: "今", hiragana: "いま", meaning: "Now" },
-                { kanji: "朝", hiragana: "あさ", meaning: "Morning" },
-                { kanji: "昼", hiragana: "ひる", meaning: "Noon, daytime" },
-                { kanji: "晩", hiragana: "ばん", meaning: "Evening" },
-                { kanji: "夜", hiragana: "よる", meaning: "Night" },
-                { kanji: "今日", hiragana: "きょう", meaning: "Today" }
-            ],
-            "Lesson 10": [
-                { kanji: "日", hiragana: "にち", meaning: "Day" },
-                { kanji: "週", hiragana: "しゅう", meaning: "Week" },
-                { kanji: "月", hiragana: "げつ", meaning: "Month" },
-                { kanji: "年", hiragana: "とし", meaning: "Year" },
-                { kanji: "先週", hiragana: "せんしゅう", meaning: "Last week" },
-                { kanji: "今週", hiragana: "こんしゅう", meaning: "This week" },
-                { kanji: "来週", hiragana: "らいしゅう", meaning: "Next week" },
-                { kanji: "先月", hiragana: "せんげつ", meaning: "Last month" },
-                { kanji: "今月", hiragana: "こんげつ", meaning: "This month" },
-                { kanji: "来月", hiragana: "らいげつ", meaning: "Next month" }
-            ],
-            "Lesson 11": [
-                { kanji: "行く", hiragana: "いく", meaning: "To go" },
-                { kanji: "来る", hiragana: "くる", meaning: "To come" },
-                { kanji: "帰る", hiragana: "かえる", meaning: "To return" },
-                { kanji: "食べる", hiragana: "たべる", meaning: "To eat" },
-                { kanji: "飲む", hiragana: "のむ", meaning: "To drink" },
-                { kanji: "寝る", hiragana: "ねる", meaning: "To sleep" },
-                { kanji: "起きる", hiragana: "おきる", meaning: "To wake up" },
-                { kanji: "見る", hiragana: "みる", meaning: "To see" },
-                { kanji: "聞く", hiragana: "きく", meaning: "To listen" },
-                { kanji: "話す", hiragana: "はなす", meaning: "To speak" }
-            ],
-            "Lesson 12": [
-                { kanji: "山", hiragana: "やま", meaning: "Mountain" },
-                { kanji: "川", hiragana: "かわ", meaning: "River" },
-                { kanji: "海", hiragana: "うみ", meaning: "Sea, Ocean" },
-                { kanji: "町", hiragana: "まち", meaning: "Town" },
-                { kanji: "村", hiragana: "むら", meaning: "Village" },
-                { kanji: "道", hiragana: "みち", meaning: "Road" },
-                { kanji: "空", hiragana: "そら", meaning: "Sky" },
-                { kanji: "天気", hiragana: "てんき", meaning: "Weather" },
-                { kanji: "晴れ", hiragana: "はれ", meaning: "Sunny weather" },
-                { kanji: "雨", hiragana: "あめ", meaning: "Rain" }
-            ],
-            "Lesson 13": [
-                { kanji: "電話", hiragana: "でんわ", meaning: "Telephone" },
-                { kanji: "手紙", hiragana: "てがみ", meaning: "Letter" },
-                { kanji: "写真", hiragana: "しゃしん", meaning: "Photograph" },
-                { kanji: "新聞", hiragana: "しんぶん", meaning: "Newspaper" },
-                { kanji: "雑誌", hiragana: "ざっし", meaning: "Magazine" },
-                { kanji: "辞書", hiragana: "じしょ", meaning: "Dictionary" },
-                { kanji: "地図", hiragana: "ちず", meaning: "Map" },
-                { kanji: "時計", hiragana: "とけい", meaning: "Clock, watch" },
-                { kanji: "傘", hiragana: "かさ", meaning: "Umbrella" },
-                { kanji: "鍵", hiragana: "かぎ", meaning: "Key" }
-            ],
-            "Lesson 14": [
-                { kanji: "電車", hiragana: "でんしゃ", meaning: "Train" },
-                { kanji: "バス", hiragana: "バス", meaning: "Bus" },
-                { kanji: "飛行機", hiragana: "ひこうき", meaning: "Airplane" },
-                { kanji: "車", hiragana: "くるま", meaning: "Car" },
-                { kanji: "自転車", hiragana: "じてんしゃ", meaning: "Bicycle" },
-                { kanji: "駅", hiragana: "えき", meaning: "Station" },
-                { kanji: "空港", hiragana: "くうこう", meaning: "Airport" },
-                { kanji: "バス停", hiragana: "バスてい", meaning: "Bus stop" },
-                { kanji: "切符", hiragana: "きっぷ", meaning: "Ticket" },
-                { kanji: "運賃", hiragana: "うんちん", meaning: "Fare" }
-            ],
-            "Lesson 15": [
-                { kanji: "銀行", hiragana: "ぎんこう", meaning: "Bank" },
-                { kanji: "郵便局", hiragana: "ゆうびんきょく", meaning: "Post office" },
-                { kanji: "病院", hiragana: "びょういん", meaning: "Hospital" },
-                { kanji: "図書館", hiragana: "としょかん", meaning: "Library" },
-                { kanji: "美術館", hiragana: "びじゅつかん", meaning: "Art museum" },
-                { kanji: "公園", hiragana: "こうえん", meaning: "Park" },
-                { kanji: "店", hiragana: "みせ", meaning: "Store" },
-                { kanji: "レストラン", hiragana: "レストラン", meaning: "Restaurant" },
-                { kanji: "駅", hiragana: "えき", meaning: "Station" },
-                { kanji: "ホテル", hiragana: "ホテル", meaning: "Hotel" }
-            ],
-            "Lesson 16": [
-                { kanji: "お金", hiragana: "おかね", meaning: "Money" },
-                { kanji: "円", hiragana: "えん", meaning: "Yen (Japanese currency)" },
-                { kanji: "買い物", hiragana: "かいもの", meaning: "Shopping" },
-                { kanji: "レシート", hiragana: "レシート", meaning: "Receipt" },
-                { kanji: "お釣り", hiragana: "おつり", meaning: "Change (money)" },
-                { kanji: "値段", hiragana: "ねだん", meaning: "Price" },
-                { kanji: "セール", hiragana: "セール", meaning: "Sale" },
-                { kanji: "クレジットカード", hiragana: "クレジットカード", meaning: "Credit card" },
-                { kanji: "現金", hiragana: "げんきん", meaning: "Cash" },
-                { kanji: "小銭", hiragana: "こぜに", meaning: "Small change" }
-            ],
-            "Lesson 17": [
-                { kanji: "家族", hiragana: "かぞく", meaning: "Family" },
-                { kanji: "両親", hiragana: "りょうしん", meaning: "Parents" },
-                { kanji: "父", hiragana: "ちち", meaning: "Father (my own)" },
-                { kanji: "母", hiragana: "はは", meaning: "Mother (my own)" },
-                { kanji: "兄", hiragana: "あに", meaning: "Older brother (my own)" },
-                { kanji: "姉", hiragana: "あね", meaning: "Older sister (my own)" },
-                { kanji: "弟", hiragana: "おとうと", meaning: "Younger brother (my own)" },
-                { kanji: "妹", hiragana: "いもうと", meaning: "Younger sister (my own)" },
-                { kanji: "兄弟", hiragana: "きょうだい", meaning: "Siblings" },
-                { kanji: "子供", hiragana: "こども", meaning: "Child" }
-            ],
-            "Lesson 18": [
-                { kanji: "友達", hiragana: "ともだち", meaning: "Friend" },
-                { kanji: "恋人", hiragana: "こいびと", meaning: "Lover, sweetheart" },
-                { kanji: "結婚", hiragana: "けっこん", meaning: "Marriage" },
-                { kanji: "誕生日", hiragana: "たんじょうび", meaning: "Birthday" },
-                { kanji: "仕事", hiragana: "しごと", meaning: "Work" },
-                { kanji: "勉強", hiragana: "べんきょう", meaning: "Study" },
-                { kanji: "趣味", hiragana: "しゅみ", meaning: "Hobby" },
-                { kanji: "スポーツ", hiragana: "スポーツ", meaning: "Sports" },
-                { kanji: "音楽", hiragana: "おんがく", meaning: "Music" },
-                { kanji: "映画", hiragana: "えいが", meaning: "Movie" }
-            ],
-            "Lesson 19": [
-                { kanji: "食べ物", hiragana: "たべもの", meaning: "Food" },
-                { kanji: "飲み物", hiragana: "のみもの", meaning: "Drink" },
-                { kanji: "ご飯", hiragana: "ごはん", meaning: "Cooked rice, meal" },
-                { kanji: "パン", hiragana: "パン", meaning: "Bread" },
-                { kanji: "肉", hiragana: "にく", meaning: "Meat" },
-                { kanji: "魚", hiragana: "さかな", meaning: "Fish" },
-                { kanji: "野菜", hiragana: "やさい", meaning: "Vegetable" },
-                { kanji: "果物", hiragana: "くだもの", meaning: "Fruit" },
-                { kanji: "水", hiragana: "みず", meaning: "Water" },
-                { kanji: "お茶", hiragana: "おちゃ", meaning: "Tea" }
-            ],
-            "Lesson 20": [
-                { kanji: "要ります", hiragana: "いります", dictionary: "要る", meaning: "to need; to require [ビザが要ります = need a visa]", myanmar: "လိုအပ်သည် [ဗီဇာ လိုအပ်သည်]" },
-                { kanji: "調べます", hiragana: "しらべます", dictionary: "調べる", meaning: "to check; to investigate; to look into", myanmar: "စစ်ဆေးသည်၊ စုံစမ်းသည်" },
-                { kanji: "修理します", hiragana: "しゅうりします", dictionary: "修理する", meaning: "to repair; to fix", myanmar: "ပြုပြင်သည်" },
-
-                { kanji: "僕", hiragana: "ぼく", meaning: "I; me (used by men, informal/polite)", myanmar: "ကျွန်တော်" },
-                { kanji: "君", hiragana: "きみ", meaning: "you (casual, used toward equals or subordinates)", myanmar: "မင်း၊ နင်" },
-                { kanji: "～君", hiragana: "～くん", meaning: "Mr./Ms. (casual suffix for boys, male friends, subordinates)", myanmar: "〜ကွန် (သူငယ်ချင်း/သားလေးများအတွက် သုံး)" },
-
-                { kanji: "うん", hiragana: "うん", meaning: "yes; yeah (casual)", myanmar: "ဟုတ်" },
-                { kanji: "ううん", hiragana: "ううん", meaning: "no; nope (casual)", myanmar: "မဟုတ်" },
-
-                { kanji: "言葉", hiragana: "ことば", meaning: "word; language; speech", myanmar: "စကား၊ ဘာသာစကား" },
-                { kanji: "着物", hiragana: "きもの", meaning: "kimono; traditional Japanese clothing", myanmar: "ဂျပန်ဝတ်စုံ (ကီမိုနို)" },
-                { kanji: "ビザ", hiragana: "ビザ", meaning: "visa", myanmar: "ဗီဇာ" },
-
-                { kanji: "初め", hiragana: "はじめ", meaning: "the beginning; start", myanmar: "အစ" },
-                { kanji: "終わり", hiragana: "おわり", meaning: "the end; conclusion", myanmar: "အဆုံး" },
-
-                { kanji: "こっち", hiragana: "こっち", meaning: "this way; this one (casual)", myanmar: "ဒီဘက်၊ ဒီတစ်ခု" },
-                { kanji: "そっち", hiragana: "そっち", meaning: "that way; that one (casual)", myanmar: "အဲဒီဘက်၊ အဲဒီတစ်ခု" },
-                { kanji: "あっち", hiragana: "あっち", meaning: "that way over there; that one over there (casual)", myanmar: "ဟိုဘက်၊ ဟိုတစ်ခု" },
-                { kanji: "どっち", hiragana: "どっち", meaning: "which (of two); which way (casual)", myanmar: "ဘယ်တစ်ခု၊ ဘယ်ဘက်" },
-
-                { kanji: "皆で", hiragana: "みんなで", meaning: "all together; by everyone", myanmar: "အားလုံးပေါင်း" },
-                { kanji: "～けど", hiragana: "～けど", meaning: "…but; although (used to soften a statement)", myanmar: "…ပေမယ့်" },
-                { kanji: "おなかがいっぱいです", hiragana: "おなかがいっぱいです", meaning: "full (after eating)", myanmar: "နံပြည့်နေပြီ" },
-
-                { kanji: "よかったら", hiragana: "よかったら", meaning: "if you like; if you not mind", myanmar: "ကြိုက်လျှင်၊ မပြဿနာလျှင်" },
-                { kanji: "色々", hiragana: "いろいろ", meaning: "various; many kinds", myanmar: "အမျိုးမျိုး" }
-            ],
-            "Lesson 21": [
-                { kanji: "思います", hiragana: "おもいます", dictionary: "思う", meaning: "to think; to consider", myanmar: "စဉ်းစားသည်၊ ထင်သည်" },
-                { kanji: "言います", hiragana: "いいます", dictionary: "言う", meaning: "to say; to speak", myanmar: "ပြောသည်" },
-                { kanji: "勝ちます", hiragana: "かちます", dictionary: "勝つ", meaning: "to win", myanmar: "အနိုင်ရသည်" },
-                { kanji: "負けます", hiragana: "まけます", dictionary: "負ける", meaning: "to lose", myanmar: "ရှုံးသည်" },
-                { kanji: "あります［お祭りが］", hiragana: "あります［おまつりが］", dictionary: "ある", meaning: "to be (existence) [festival]", myanmar: "ရှိသည် [ပွဲတော်ရှိသည်]" },
-                { kanji: "役に立ちます", hiragana: "やくにたちます", dictionary: "役に立つ", meaning: "to be useful; to be helpful", myanmar: "အသုံးဝင်သည်" },
-                { kanji: "動きます", hiragana: "うごきます", dictionary: "動く", meaning: "to move", myanmar: "ရွှေ့လျားသည်၊ လှုပ်ရှားသည်" },
-                { kanji: "やめます［会社を～］", hiragana: "やめます［かいしゃを～］", dictionary: "やめる", meaning: "to quit; to stop [a company]", myanmar: "အလုပ်နားသည် [ကုမ္ပဏီနားထောင်သည်]" },
-                { kanji: "気をつけます", hiragana: "きをつけます", dictionary: "気をつける", meaning: "to be careful; to pay attention", myanmar: "ဂရုစိုက်သည်" },
-                { kanji: "無駄［な］", hiragana: "むだ［な］", meaning: "wasteful; useless", myanmar: "အလွန်မရှိအကျိုးမရှိ" },
-                { kanji: "不便［な］", hiragana: "ふべん［な］", meaning: "inconvenient", myanmar: "မလွယ်ကူသော" },
-                { kanji: "すごい", hiragana: "すごい", meaning: "amazing; incredible", myanmar: "အံ့သြဖွယ်၊ ထူးခြားသော" },
-                { kanji: "本当", hiragana: "ほんとう", meaning: "truth; reality", myanmar: "အမှန်တရား" },
-                { kanji: "嘘", hiragana: "うそ", meaning: "lie; falsehood", myanmar: "အ嘘၊ မမှန်သော" },
-                { kanji: "自動車", hiragana: "じどうしゃ", meaning: "automobile; car", myanmar: "ကား" },
-                { kanji: "交通", hiragana: "こうつう", meaning: "traffic; transportation", myanmar: "ရထား၊ ယာဉ်ကြော" },
-                { kanji: "物価", hiragana: "ぶっか", meaning: "prices; cost of living", myanmar: "ဈေးနှုန်း" },
-                { kanji: "放送", hiragana: "ほうそう", meaning: "broadcast; transmission", myanmar: "ထုတ်လွှင့်မှု" },
-                { kanji: "ニュース", hiragana: "ニュース", meaning: "news", myanmar: "သတင်း" },
-                { kanji: "アニメ", hiragana: "アニメ", meaning: "animation; anime", myanmar: "ကာတွန်း" },
-                { kanji: "マンガ", hiragana: "マンガ", meaning: "comic; manga", myanmar: "မန်ဂါ" },
-                { kanji: "デザイン", hiragana: "デザイン", meaning: "design", myanmar: "ဒီဇိုင်း" },
-                { kanji: "夢", hiragana: "ゆめ", meaning: "dream", myanmar: "အိပ်မက်" },
-                { kanji: "天才", hiragana: "てんさい", meaning: "genius", myanmar: "ကြယ်ပွင့်" },
-                { kanji: "意見", hiragana: "いけん", meaning: "opinion; view", myanmar: "အမြင်" },
-                { kanji: "話", hiragana: "はなし", meaning: "talk; story", myanmar: "စကားပြော၊ ပုံပြင်" },
-                { kanji: "地球", hiragana: "ちきゅう", meaning: "the Earth; globe", myanmar: "ကမ္ဘာ" },
-                { kanji: "月", hiragana: "つき", meaning: "moon; month", myanmar: "လ" },
-                { kanji: "最近", hiragana: "さいきん", meaning: "recently; these days", myanmar: "မကြာသေးခင်က၊ ယနေ့ခေတ်" },
-                { kanji: "多分", hiragana: "たぶん", meaning: "probably; maybe", myanmar: "နိုင်လည်း၊ ဖြစ်နိုင်သည်" },
-                { kanji: "きっと", hiragana: "きっと", meaning: "surely; definitely", myanmar: "သေချာစွာ" },
-                { kanji: "本当に", hiragana: "ほんとうに", meaning: "really; truly", myanmar: "အစစ်အမှန်" },
-                { kanji: "そんなに", hiragana: "そんなに", meaning: "so; that much", myanmar: "အဲဒီအတိုင်း" },
-                { kanji: "～について", hiragana: "～について", meaning: "about; concerning", myanmar: "…အကြောင်း" },
-                { kanji: "久しぶりですね", hiragana: "ひさしぶりですね", meaning: "long time no see", myanmar: "အကြာကြီးနောက်" },
-                { kanji: "～でも飲みませんか", hiragana: "～でものみませんか", meaning: "won't you have (a drink)?", myanmar: "…တစ်ခါ သောက်မလား?" },
-                { kanji: "もちろん", hiragana: "もちろん", meaning: "of course; certainly", myanmar: "တကယ်ပါ" },
-                { kanji: "もう帰らないと", hiragana: "もうかえらないと", meaning: "I have to go home now", myanmar: "အခုနောက်ပြန်ရမယ်" }
-            ],
-            "Lesson 22": [
-                { 
-                    kanji: "着ます", 
-                    hiragana: "きます", 
-                    dictionary: "着る", 
-                    meaning: "to wear; put on (clothes on the upper body)", 
-                    myanmar: "ဝတ်သည် (ကိုယ်အထက်ပိုင်းအဝတ်)" 
-                },
-                { 
-                    kanji: "履きます", 
-                    hiragana: "はきます", 
-                    dictionary: "履く", 
-                    meaning: "to wear; put on (shoes, pants, etc.)", 
-                    myanmar: "ဝတ်သည် (ဘောင်းဘီ၊ ဖိနပ် စသည်)" 
-                },
-                { 
-                    kanji: "かぶります", 
-                    hiragana: "かぶります", 
-                    dictionary: "かぶる", 
-                    meaning: "to put on (a hat, cap)", 
-                    myanmar: "ဦးထုပ် တပ်သည်" 
-                },
-                { 
-                    kanji: "掛けます", 
-                    hiragana: "かけます", 
-                    dictionary: "掛ける", 
-                    meaning: "to put on (glasses)", 
-                    myanmar: "မျက်မှန် တပ်သည်" 
-                },
-                { 
-                    kanji: "します", 
-                    hiragana: "します", 
-                    dictionary: "する", 
-                    meaning: "to wear (accessories, tie, etc.)", 
-                    myanmar: "အလှဆင်ပစ္စည်း (နက်တိုင် စသည်) ဝတ်သည်" 
-                },
-                { 
-                    kanji: "生まれます", 
-                    hiragana: "うまれます", 
-                    dictionary: "生まれる", 
-                    meaning: "to be born", 
-                    myanmar: "မွေးဖွားသည်" 
-                },
-
-                { kanji: "私たち", hiragana: "わたしたち", meaning: "we; us", myanmar: "ကျွန်တော်တို့၊ ကျွန်မတို့" },
-                { kanji: "コート", hiragana: "コート", meaning: "coat; overcoat", myanmar: "အလောင်းထည်အဖျား အထည်" },
-                { kanji: "セーター", hiragana: "セーター", meaning: "sweater", myanmar: "ဆွယ်တာ" },
-                { kanji: "スーツ", hiragana: "スーツ", meaning: "suit", myanmar: "စုံဝတ်စုံ" },
-                { kanji: "帽子", hiragana: "ぼうし", meaning: "hat; cap", myanmar: "ဦးထုပ်" },
-                { kanji: "眼鏡", hiragana: "めがね", meaning: "glasses", myanmar: "မျက်မှန်" },
-                { kanji: "ケーキ", hiragana: "ケーキ", meaning: "cake", myanmar: "ကိတ်မုန့်" },
-                { kanji: "お弁当", hiragana: "おべんとう", meaning: "boxed lunch; bento", myanmar: "ထမင်းဘူး" },
-                { kanji: "ロボット", hiragana: "ロボット", meaning: "robot", myanmar: "ရိုဘော့" },
-                { kanji: "ユーモア", hiragana: "ユーモア", meaning: "humor", myanmar: "စိတ္ထူးစရာ၊ ဟာသ" },
-                { kanji: "都合", hiragana: "つごう", meaning: "convenience; circumstances", myanmar: "အဆင်ပြေမှု၊ အခြေအနေ" },
-                { kanji: "よく", hiragana: "よく", meaning: "often; well", myanmar: "မကြာခဏ၊ အရမ်းကောင်းစွာ" },
-                { kanji: "えーと", hiragana: "えーと", meaning: "let me see…; well… (hesitation)", myanmar: "အဓိပ္ပာယ်ပြန်လည် စဉ်းစားနေစဉ် အသုံးပြုသော စကား" },
-                { kanji: "おめでとうございます", hiragana: "おめでとうございます", meaning: "congratulations", myanmar: "ဂုဏ်ယူပါတယ်" },
-                { kanji: "お探しですか", hiragana: "おさがしですか", meaning: "Are you looking for …?", myanmar: "မင်း/ခင်ဗျား …ကို ရှာနေပါသလား" },
-                { kanji: "では", hiragana: "では", meaning: "well then; in that case", myanmar: "အဲဒီအတွက်၊ ဒါဆိုရင်" },
-                { kanji: "こちら", hiragana: "こちら", meaning: "this way; here; this one (polite)", myanmar: "ဒီဘက်၊ ဒီနေရာ၊ ဤတစ်ခု" },
-                { kanji: "家賃", hiragana: "やちん", meaning: "rent (for a house/apartment)", myanmar: "အိမ်ငှားခ" },
-                { kanji: "ダイニングキッチン", hiragana: "ダイニングキッチン", meaning: "dining kitchen", myanmar: "စားပွဲခုံနှင့် မီးဖိုခန်းပေါင်း" },
-                { kanji: "和室", hiragana: "わしつ", meaning: "Japanese-style room", myanmar: "ဂျပန်စတိုင် အခန်း (畳)" },
-                { kanji: "押し入れ", hiragana: "おしいれ", meaning: "closet (Japanese-style)", myanmar: "ဂျပန်စတိုင် ပစ္စည်းထည့်ခန်း" },
-                { kanji: "布団", hiragana: "ふとん", meaning: "futon (Japanese bedding)", myanmar: "ဖူတုံ (ဂျပန်အိပ်ရာ)" }
-            ],
-            "Lesson 23": [
-                { kanji: "聞きます", hiragana: "ききます", dictionary: "聞く", meaning: "to ask; to listen", myanmar: "မေးသည်၊ နားထောင်သည်" },
-                { kanji: "回します", hiragana: "まわします", dictionary: "回す", meaning: "to turn; to rotate", myanmar: "လှည့်သည်" },
-                { kanji: "引きます", hiragana: "ひきます", dictionary: "引く", meaning: "to pull; to draw", myanmar: "ဆွဲသည်" },
-                { kanji: "変えます", hiragana: "かえます", dictionary: "変える", meaning: "to change; to exchange", myanmar: "ပြောင်းသည်၊ အစားထိုးသည်" },
-                { kanji: "触ります", hiragana: "さわります", dictionary: "触る", meaning: "to touch (something)", myanmar: "ထိသည်" },
-                { kanji: "出ます", hiragana: "でます", dictionary: "出る", meaning: "to go out; to leave; to come out; to attend", myanmar: "ထွက်သည်၊ ပေါ်ထွက်သည်၊ ပါဝင်သည်" },
-                { kanji: "歩きます", hiragana: "あるきます", dictionary: "歩く", meaning: "to walk", myanmar: "လမ်းလျှောက်သည်" },
-                { kanji: "渡ります", hiragana: "わたります", dictionary: "渡る", meaning: "to cross (a bridge, road, etc.)", myanmar: "ဖြတ်သည်၊ ကူးသည်" },
-                { kanji: "曲がります", hiragana: "まがります", dictionary: "曲がる", meaning: "to turn (left/right)", myanmar: "လှည့်သည် (ဘယ်/ညာ)" },
-
-                { kanji: "寂しい", hiragana: "さびしい", meaning: "lonely; lonesome", myanmar: "အထီးကျန်" },
-                { kanji: "お湯", hiragana: "おゆ", meaning: "hot water", myanmar: "ပူသောရေ" },
-                { kanji: "音", hiragana: "おと", meaning: "sound; noise", myanmar: "အသံ" },
-                { kanji: "サイズ", hiragana: "サイズ", meaning: "size", myanmar: "အရွယ်အစား" },
-                { kanji: "故障", hiragana: "こしょう", meaning: "breakdown; failure (of a machine, car, etc.)", myanmar: "ပျက်စီးမှု (စက်၊ ကား စသည်)" },
-                { kanji: "道", hiragana: "みち", meaning: "street; road; way", myanmar: "လမ်း" },
-                { kanji: "交差点", hiragana: "こうさてん", meaning: "intersection; crossing", myanmar: "လမ်းထိပ် (လမ်းထိပ်ခွဲ)" },
-                { kanji: "信号", hiragana: "しんごう", meaning: "traffic light; signal", myanmar: "အနီအ초록မီး၊ ညွှန်တံ" },
-                { kanji: "角", hiragana: "かど", meaning: "corner (of a street, building, etc.)", myanmar: "လမ်းထောင့်၊ အထောင့်" },
-                { kanji: "橋", hiragana: "はし", meaning: "bridge", myanmar: "တံတား" },
-                { kanji: "駐車場", hiragana: "ちゅうしゃじょう", meaning: "parking lot", myanmar: "ကားထောင့်၊ ကားရပ်နားရာ" },
-                { kanji: "建物", hiragana: "たてもの", meaning: "building", myanmar: "အဆောက်အဦ" },
-
-                { kanji: "何回も", hiragana: "なんかいも", meaning: "many times; over and over", myanmar: "အကြိမ်များစွာ" },
-                { kanji: "―目", hiragana: "―め", meaning: "the ―th (used for order)", myanmar: "မြောက်၊ အဆင့် (ဥပမာ: ပထမမြောက်၊ ဒုတိယမြောက်)" }
-            ],
-            "Lesson 24": [
-                { kanji: "呉れます", hiragana: "くれます", dictionary: "くれる", meaning: "to give (to me / my family)", myanmar: "ပေးသည် (ကျွန်တော်/ကျွန်မဘက်ကို)" },
-                { kanji: "直します", hiragana: "なおします", dictionary: "直す", meaning: "to repair, fix, correct", myanmar: "ပြန်လည်ပြင်ဆင်သည်၊ ပြင်ပေးသည်" },
-                { kanji: "連れて行きます", hiragana: "つれていきます", dictionary: "連れていく", meaning: "to take (a person) along", myanmar: "တစ်ဦးတစ်ယောက်ကို ထိန်းသွားသည်" },
-                { kanji: "連れて来ます", hiragana: "つれてきます", dictionary: "連れてくる", meaning: "to bring (a person) along", myanmar: "တစ်ဦးတစ်ယောက်ကို ထိန်းယူလာသည်" },
-                { kanji: "送ります", hiragana: "おくります", dictionary: "送る", meaning: "to escort, accompany (a person); also “to send” (letters, parcels, etc.)", myanmar: "တစ်ဦးတစ်ယောက်ကို အတူသွားပေးသည်၊ စာ/ပစ္စည်း ပို့သည်" },
-                { kanji: "紹介します", hiragana: "しょうかいします", dictionary: "紹介する", meaning: "to introduce", myanmar: "မိတ်ဆက်ပေးသည်" },
-                { kanji: "案内します", hiragana: "あんないします", dictionary: "案内する", meaning: "to guide, show around, lead the way", myanmar: "လမ်းညွှန်ပေးသည်၊ လမ်းပြပေးသည်" },
-                { kanji: "説明します", hiragana: "せつめいします", dictionary: "説明する", meaning: "to explain", myanmar: "ရှင်းပြသည်" },
-                { kanji: "おじいさん", hiragana: "おじいさん", meaning: "grandfather; old man", myanmar: "အဘိုး၊ အရွယ်ရင့်သူ" },
-                { kanji: "おばあさん", hiragana: "おばあさん", meaning: "grandmother; old woman", myanmar: "အဘွား၊ အရွယ်ရင့်မိန်းမ" },
-                { kanji: "じゅんび", hiragana: "じゅんび", meaning: "preparation", myanmar: "ပြင်ဆင်မှု" },
-                { kanji: "引っ越し", hiragana: "ひっこし", meaning: "moving (to a new house)", myanmar: "အိမ်ပြောင်းခြင်း" },
-                { kanji: "お菓子", hiragana: "おかし", meaning: "sweets; snacks", myanmar: "မုန့်၊ အလွယ်စားအစားအစာ" },
-                { kanji: "ホームステイ", hiragana: "ホームステイ", meaning: "homestay (living with a host family)", myanmar: "အိမ်ရှင်အဖွဲ့နဲ့အတူနေရခြင်း" },
-                { kanji: "全部", hiragana: "ぜんぶ", meaning: "all; everything", myanmar: "အားလုံး" },
-                { kanji: "自分で", hiragana: "じぶんで", meaning: "by oneself; do it yourself", myanmar: "ကိုယ်တိုင်" },
-                { kanji: "他に", hiragana: "ほかに", meaning: "besides; in addition; other", myanmar: "အခြား၊ ထပ်မံ၍" }
-            ],
-            "Lesson 25": [
-                { kanji: "考えます", hiragana: "かんがえます", dictionary: "考える", meaning: "to think; to consider", myanmar: "စဉ်းစားသည်" },
-                { kanji: "着きます", hiragana: "つきます", dictionary: "着く", meaning: "to arrive (at a place)", myanmar: "ရောက်သည်" },
-                { kanji: "取ります", hiragana: "とります", dictionary: "取る", meaning: "to grow old; to take", myanmar: "ယူသည်၊ အိုသည်" },
-                { kanji: "足ります", hiragana: "たります", dictionary: "足りる", meaning: "to be enough; to suffice", myanmar: "လုံလောက်သည်" },
-                { kanji: "億", hiragana: "おく", meaning: "hundred million", myanmar: "သန်းတစ်ရာ (၁၀၀,၀၀၀,၀၀၀)" },
-                { kanji: "田舎", hiragana: "いなか", meaning: "countryside; hometown", myanmar: "ကျေးလက်၊ မွေးရပ်" },
-                { kanji: "チャンス", hiragana: "チャンス", meaning: "chance; opportunity", myanmar: "အခွင့်အရေး" },
-                { kanji: "意味", hiragana: "いみ", meaning: "meaning", myanmar: "အဓိပ္ပာယ်" },
-                { kanji: "転勤", hiragana: "てんきん", meaning: "job transfer", myanmar: "အလုပ်အပြောင်းအရွှေ့" },
-                { kanji: "事", hiragana: "こと", meaning: "thing; matter; fact", myanmar: "အရာ၊ အမှု" },
-                { kanji: "暇", hiragana: "ひま", meaning: "free time; leisure", myanmar: "အားလပ်ချိန်" },
-                { kanji: "もし", hiragana: "もし", meaning: "if ...", myanmar: "အကယ်၍" },
-                { kanji: "もしもし", hiragana: "もしもし", meaning: "hello (on the phone)", myanmar: "ဟယ်လို (ဖုန်းမပြောချိန်)" },
-                { kanji: "お世話になりました", hiragana: "おせわになりました", meaning: "Thank you for everything.", myanmar: "အကူအညီပေးသဖြင့် ကျေးဇူးတင်ပါသည်" },
-                { kanji: "頑張ります", hiragana: "がんばります", dictionary: "頑張る", meaning: "I’ll do my best.", myanmar: "ကြိုးစားပါမည်" },
-                { kanji: "どうぞお元気で", hiragana: "どうぞおげんきで", meaning: "Please take care of yourself.", myanmar: "ကျန်းမာအောင်ဂရုစိုက်ပါ" }
-            ]
+            N5: {
+                "Lesson 1": [
+                    { kanji: "おはようございます", hiragana: "おはようございます", meaning: "Good morning" },
+                    { kanji: "こんにちは", hiragana: "こんにちは", meaning: "Hello, Good afternoon" },
+                    { kanji: "こんばんは", hiragana: "こんばんは", meaning: "Good evening" },
+                    { kanji: "おやすみ", hiragana: "おやすみ", meaning: "Good night" },
+                    { kanji: "さようなら", hiragana: "さようなら", meaning: "Goodbye" },
+                    { kanji: "ありがとう", hiragana: "ありがとう", meaning: "Thank you" },
+                    { kanji: "すみません", hiragana: "すみません", meaning: "Excuse me, Sorry" },
+                    { kanji: "ごめんなさい", hiragana: "ごめんなさい", meaning: "I'm sorry" },
+                    { kanji: "いただきます", hiragana: "いただきます", meaning: "I humbly receive (before eating)" },
+                    { kanji: "ごちそうさまでした", hiragana: "ごちそうさまでした", meaning: "Thank you for the meal (after eating)" }
+                ],
+                "Lesson 2": [
+                    { kanji: "はい", hiragana: "はい", meaning: "Yes" },
+                    { kanji: "いいえ", hiragana: "いいえ", meaning: "No" },
+                    { kanji: "おなまえは？", hiragana: "おなまえは？", meaning: "What is your name?" },
+                    { kanji: "わたしは", hiragana: "わたしは", meaning: "I am..." },
+                    { kanji: "せんせい", hiragana: "せんせい", meaning: "Teacher" },
+                    { kanji: "がくせい", hiragana: "がくせい", meaning: "Student" },
+                    { kanji: "ともだち", hiragana: "ともだち", meaning: "Friend" },
+                    { kanji: "にほんご", hiragana: "にほんご", meaning: "Japanese language" },
+                    { kanji: "えいご", hiragana: "えいご", meaning: "English language" },
+                    { kanji: "しごと", hiragana: "しごと", meaning: "Work, job" }
+                ],
+                "Lesson 3": [
+                    { kanji: "おげんきですか？", hiragana: "おげんきですか？", meaning: "How are you?" },
+                    { kanji: "げんきです", hiragana: "げんきです", meaning: "I'm fine" },
+                    { kanji: "おいくつですか？", hiragana: "おいくつですか？", meaning: "How old are you?" },
+                    { kanji: "なんさいですか？", hiragana: "なんさいですか？", meaning: "How old are you?" },
+                    { kanji: "かぞく", hiragana: "かぞく", meaning: "Family" },
+                    { kanji: "おとうさん", hiragana: "おとうさん", meaning: "Father" },
+                    { kanji: "おかあさん", hiragana: "おかあさん", meaning: "Mother" },
+                    { kanji: "きょうだい", hiragana: "きょうだい", meaning: "Siblings" },
+                    { kanji: "おにいさん", hiragana: "おにいさん", meaning: "Older brother" },
+                    { kanji: "いもうと", hiragana: "いもうと", meaning: "Younger sister" }
+                ],
+                "Lesson 4": [
+                    { kanji: "学校", hiragana: "がっこう", meaning: "School" },
+                    { kanji: "学生", hiragana: "がくせい", meaning: "Student" },
+                    { kanji: "先生", hiragana: "せんせい", meaning: "Teacher" },
+                    { kanji: "本", hiragana: "ほん", meaning: "Book" },
+                    { kanji: "机", hiragana: "つくえ", meaning: "Desk" },
+                    { kanji: "椅子", hiragana: "いす", meaning: "Chair" },
+                    { kanji: "鉛筆", hiragana: "えんぴつ", meaning: "Pencil" },
+                    { kanji: "消しゴム", hiragana: "けしごむ", meaning: "Eraser" },
+                    { kanji: "かばん", hiragana: "かばん", meaning: "Bag" },
+                    { kanji: "ノート", hiragana: "ノート", meaning: "Notebook" }
+                ],
+                "Lesson 5": [
+                    { kanji: "食べる", hiragana: "たべる", meaning: "to eat" },
+                    { kanji: "飲む", hiragana: "のむ", meaning: "to drink" },
+                    { kanji: "買う", hiragana: "かう", meaning: "to buy" },
+                    { kanji: "見る", hiragana: "みる", meaning: "to see, to watch" },
+                    { kanji: "聞く", hiragana: "きく", meaning: "to listen, to hear" },
+                    { kanji: "書く", hiragana: "かく", meaning: "to write" },
+                    { kanji: "読む", hiragana: "よむ", meaning: "to read" },
+                    { kanji: "話す", hiragana: "はなす", meaning: "to speak" },
+                    { kanji: "行く", hiragana: "いく", meaning: "to go" },
+                    { kanji: "来る", hiragana: "くる", meaning: "to come" }
+                ],
+                "Lesson 6": [
+                    { kanji: "家", hiragana: "いえ", meaning: "House" },
+                    { kanji: "部屋", hiragana: "へや", meaning: "Room" },
+                    { kanji: "台所", hiragana: "だいどころ", meaning: "Kitchen" },
+                    { kanji: "風呂", hiragana: "ふろ", meaning: "Bath" },
+                    { kanji: "トイレ", hiragana: "トイレ", meaning: "Toilet" },
+                    { kanji: "ドア", hiragana: "ドア", meaning: "Door" },
+                    { kanji: "窓", hiragana: "まど", meaning: "Window" },
+                    { kanji: "電気", hiragana: "でんき", meaning: "Electricity, light" },
+                    { kanji: "冷蔵庫", hiragana: "れいぞうこ", meaning: "Refrigerator" },
+                    { kanji: "テレビ", hiragana: "テレビ", meaning: "Television" }
+                ],
+                "Lesson 7": [
+                    { kanji: "好き", hiragana: "すき", meaning: "Likeable" },
+                    { kanji: "嫌い", hiragana: "きらい", meaning: "Hateable" },
+                    { kanji: "上手", hiragana: "じょうず", meaning: "Good at" },
+                    { kanji: "下手", hiragana: "へた", meaning: "Bad at" },
+                    { kanji: "元気", hiragana: "げんき", meaning: "Healthy, cheerful" },
+                    { kanji: "暇", hiragana: "ひま", meaning: "Free time" },
+                    { kanji: "便利", hiragana: "べんり", meaning: "Convenient" },
+                    { kanji: "不便", hiragana: "ふべん", meaning: "Inconvenient" },
+                    { kanji: "賑やか", hiragana: "にぎやか", meaning: "Lively" },
+                    { kanji: "静か", hiragana: "しずか", meaning: "Quiet" }
+                ],
+                "Lesson 8": [
+                    { kanji: "高い", hiragana: "たかい", meaning: "Tall, expensive" },
+                    { kanji: "安い", hiragana: "やすい", meaning: "Cheap" },
+                    { kanji: "大きい", hiragana: "おおきい", meaning: "Big" },
+                    { kanji: "小さい", hiragana: "ちいさい", meaning: "Small" },
+                    { kanji: "新しい", hiragana: "あたらしい", meaning: "New" },
+                    { kanji: "古い", hiragana: "ふるい", meaning: "Old" },
+                    { kanji: "美味しい", hiragana: "おいしい", meaning: "Delicious" },
+                    { kanji: "不味い", hiragana: "まずい", meaning: "Bad-tasting" },
+                    { kanji: "暑い", hiragana: "あつい", meaning: "Hot (weather)" },
+                    { kanji: "寒い", hiragana: "さむい", meaning: "Cold (weather)" }
+                ],
+                "Lesson 9": [
+                    { kanji: "時", hiragana: "とき", meaning: "Time" },
+                    { kanji: "分", hiragana: "ふん", meaning: "Minute" },
+                    { kanji: "午前", hiragana: "ごぜん", meaning: "AM" },
+                    { kanji: "午後", hiragana: "ごご", meaning: "PM" },
+                    { kanji: "今", hiragana: "いま", meaning: "Now" },
+                    { kanji: "朝", hiragana: "あさ", meaning: "Morning" },
+                    { kanji: "昼", hiragana: "ひる", meaning: "Noon, daytime" },
+                    { kanji: "晩", hiragana: "ばん", meaning: "Evening" },
+                    { kanji: "夜", hiragana: "よる", meaning: "Night" },
+                    { kanji: "今日", hiragana: "きょう", meaning: "Today" }
+                ],
+                "Lesson 10": [
+                    { kanji: "日", hiragana: "にち", meaning: "Day" },
+                    { kanji: "週", hiragana: "しゅう", meaning: "Week" },
+                    { kanji: "月", hiragana: "げつ", meaning: "Month" },
+                    { kanji: "年", hiragana: "とし", meaning: "Year" },
+                    { kanji: "先週", hiragana: "せんしゅう", meaning: "Last week" },
+                    { kanji: "今週", hiragana: "こんしゅう", meaning: "This week" },
+                    { kanji: "来週", hiragana: "らいしゅう", meaning: "Next week" },
+                    { kanji: "先月", hiragana: "せんげつ", meaning: "Last month" },
+                    { kanji: "今月", hiragana: "こんげつ", meaning: "This month" },
+                    { kanji: "来月", hiragana: "らいげつ", meaning: "Next month" }
+                ],
+                "Lesson 11": [
+                    { kanji: "行く", hiragana: "いく", meaning: "To go" },
+                    { kanji: "来る", hiragana: "くる", meaning: "To come" },
+                    { kanji: "帰る", hiragana: "かえる", meaning: "To return" },
+                    { kanji: "食べる", hiragana: "たべる", meaning: "To eat" },
+                    { kanji: "飲む", hiragana: "のむ", meaning: "To drink" },
+                    { kanji: "寝る", hiragana: "ねる", meaning: "To sleep" },
+                    { kanji: "起きる", hiragana: "おきる", meaning: "To wake up" },
+                    { kanji: "見る", hiragana: "みる", meaning: "To see" },
+                    { kanji: "聞く", hiragana: "きく", meaning: "To listen" },
+                    { kanji: "話す", hiragana: "はなす", meaning: "To speak" }
+                ],
+                "Lesson 12": [
+                    { kanji: "山", hiragana: "やま", meaning: "Mountain" },
+                    { kanji: "川", hiragana: "かわ", meaning: "River" },
+                    { kanji: "海", hiragana: "うみ", meaning: "Sea, Ocean" },
+                    { kanji: "町", hiragana: "まち", meaning: "Town" },
+                    { kanji: "村", hiragana: "むら", meaning: "Village" },
+                    { kanji: "道", hiragana: "みち", meaning: "Road" },
+                    { kanji: "空", hiragana: "そら", meaning: "Sky" },
+                    { kanji: "天気", hiragana: "てんき", meaning: "Weather" },
+                    { kanji: "晴れ", hiragana: "はれ", meaning: "Sunny weather" },
+                    { kanji: "雨", hiragana: "あめ", meaning: "Rain" }
+                ],
+                "Lesson 13": [
+                    { kanji: "電話", hiragana: "でんわ", meaning: "Telephone" },
+                    { kanji: "手紙", hiragana: "てがみ", meaning: "Letter" },
+                    { kanji: "写真", hiragana: "しゃしん", meaning: "Photograph" },
+                    { kanji: "新聞", hiragana: "しんぶん", meaning: "Newspaper" },
+                    { kanji: "雑誌", hiragana: "ざっし", meaning: "Magazine" },
+                    { kanji: "辞書", hiragana: "じしょ", meaning: "Dictionary" },
+                    { kanji: "地図", hiragana: "ちず", meaning: "Map" },
+                    { kanji: "時計", hiragana: "とけい", meaning: "Clock, watch" },
+                    { kanji: "傘", hiragana: "かさ", meaning: "Umbrella" },
+                    { kanji: "鍵", hiragana: "かぎ", meaning: "Key" }
+                ],
+                "Lesson 14": [
+                    { kanji: "電車", hiragana: "でんしゃ", meaning: "Train" },
+                    { kanji: "バス", hiragana: "バス", meaning: "Bus" },
+                    { kanji: "飛行機", hiragana: "ひこうき", meaning: "Airplane" },
+                    { kanji: "車", hiragana: "くるま", meaning: "Car" },
+                    { kanji: "自転車", hiragana: "じてんしゃ", meaning: "Bicycle" },
+                    { kanji: "駅", hiragana: "えき", meaning: "Station" },
+                    { kanji: "空港", hiragana: "くうこう", meaning: "Airport" },
+                    { kanji: "バス停", hiragana: "バスてい", meaning: "Bus stop" },
+                    { kanji: "切符", hiragana: "きっぷ", meaning: "Ticket" },
+                    { kanji: "運賃", hiragana: "うんちん", meaning: "Fare" }
+                ],
+                "Lesson 15": [
+                    { kanji: "銀行", hiragana: "ぎんこう", meaning: "Bank" },
+                    { kanji: "郵便局", hiragana: "ゆうびんきょく", meaning: "Post office" },
+                    { kanji: "病院", hiragana: "びょういん", meaning: "Hospital" },
+                    { kanji: "図書館", hiragana: "としょかん", meaning: "Library" },
+                    { kanji: "美術館", hiragana: "びじゅつかん", meaning: "Art museum" },
+                    { kanji: "公園", hiragana: "こうえん", meaning: "Park" },
+                    { kanji: "店", hiragana: "みせ", meaning: "Store" },
+                    { kanji: "レストラン", hiragana: "レストラン", meaning: "Restaurant" },
+                    { kanji: "駅", hiragana: "えき", meaning: "Station" },
+                    { kanji: "ホテル", hiragana: "ホテル", meaning: "Hotel" }
+                ],
+                "Lesson 16": [
+                    { kanji: "お金", hiragana: "おかね", meaning: "Money" },
+                    { kanji: "円", hiragana: "えん", meaning: "Yen (Japanese currency)" },
+                    { kanji: "買い物", hiragana: "かいもの", meaning: "Shopping" },
+                    { kanji: "レシート", hiragana: "レシート", meaning: "Receipt" },
+                    { kanji: "お釣り", hiragana: "おつり", meaning: "Change (money)" },
+                    { kanji: "値段", hiragana: "ねだん", meaning: "Price" },
+                    { kanji: "セール", hiragana: "セール", meaning: "Sale" },
+                    { kanji: "クレジットカード", hiragana: "クレジットカード", meaning: "Credit card" },
+                    { kanji: "現金", hiragana: "げんきん", meaning: "Cash" },
+                    { kanji: "小銭", hiragana: "こぜに", "meaning": "Small change" }
+                ],
+                "Lesson 17": [
+                    { kanji: "家族", hiragana: "かぞく", meaning: "Family" },
+                    { kanji: "両親", hiragana: "りょうしん", meaning: "Parents" },
+                    { kanji: "父", hiragana: "ちち", meaning: "Father (my own)" },
+                    { kanji: "母", hiragana: "はは", meaning: "Mother (my own)" },
+                    { kanji: "兄", hiragana: "あに", meaning: "Older brother (my own)" },
+                    { kanji: "姉", hiragana: "あね", meaning: "Older sister (my own)" },
+                    { kanji: "弟", hiragana: "おとうと", meaning: "Younger brother (my own)" },
+                    { kanji: "妹", hiragana: "いもうと", meaning: "Younger sister (my own)" },
+                    { kanji: "兄弟", hiragana: "きょうだい", meaning: "Siblings" },
+                    { kanji: "子供", hiragana: "こども", meaning: "Child" }
+                ],
+                "Lesson 18": [
+                    { kanji: "友達", hiragana: "ともだち", meaning: "Friend" },
+                    { kanji: "恋人", hiragana: "こいびと", meaning: "Lover, sweetheart" },
+                    { kanji: "結婚", hiragana: "けっこん", meaning: "Marriage" },
+                    { kanji: "誕生日", hiragana: "たんじょうび", meaning: "Birthday" },
+                    { kanji: "仕事", hiragana: "しごと", meaning: "Work" },
+                    { kanji: "勉強", hiragana: "べんきょう", meaning: "Study" },
+                    { kanji: "趣味", hiragana: "しゅみ", meaning: "Hobby" },
+                    { kanji: "スポーツ", hiragana: "スポーツ", meaning: "Sports" },
+                    { kanji: "音楽", hiragana: "おんがく", meaning: "Music" },
+                    { kanji: "映画", hiragana: "えいが", meaning: "Movie" }
+                ],
+                "Lesson 19": [
+                    { kanji: "食べ物", hiragana: "たべもの", meaning: "Food" },
+                    { kanji: "飲み物", hiragana: "のみもの", meaning: "Drink" },
+                    { kanji: "ご飯", hiragana: "ごはん", meaning: "Cooked rice, meal" },
+                    { kanji: "パン", hiragana: "パン", meaning: "Bread" },
+                    { kanji: "肉", hiragana: "にく", meaning: "Meat" },
+                    { kanji: "魚", hiragana: "さかな", meaning: "Fish" },
+                    { kanji: "野菜", hiragana: "やさい", meaning: "Vegetable" },
+                    { kanji: "果物", hiragana: "くだもの", meaning: "Fruit" },
+                    { kanji: "水", hiragana: "みず", meaning: "Water" },
+                    { kanji: "お茶", hiragana: "おちゃ", meaning: "Tea" }
+                ],
+                "Lesson 20": [
+                    { kanji: "要ります", hiragana: "いります", dictionary: "要る", meaning: "to need; to require [ビザが要ります = need a visa]", myanmar: "လိုအပ်သည် [ဗီဇာ လိုအပ်သည်]" },
+                    { kanji: "調べます", hiragana: "しらべます", dictionary: "調べる", meaning: "to check; to investigate; to look into", myanmar: "စစ်ဆေးသည်၊ စုံစမ်းသည်" },
+                    { kanji: "修理します", hiragana: "しゅうりします", dictionary: "修理する", meaning: "to repair; to fix", myanmar: "ပြုပြင်သည်" },
+                    { kanji: "僕", hiragana: "ぼく", meaning: "I; me (used by men, informal/polite)", myanmar: "ကျွန်တော်" },
+                    { kanji: "君", hiragana: "きみ", meaning: "you (casual, used toward equals or subordinates)", myanmar: "မင်း၊ နင်" },
+                    { kanji: "～君", hiragana: "～くん", meaning: "Mr./Ms. (casual suffix for boys, male friends, subordinates)", myanmar: "〜ကွန် (သူငယ်ချင်း/သားလေးများအတွက် သုံး)" },
+                    { kanji: "うん", hiragana: "うん", meaning: "yes; yeah (casual)", myanmar: "ဟုတ်" },
+                    { kanji: "ううん", hiragana: "ううん", meaning: "no; nope (casual)", myanmar: "မဟုတ်" },
+                    { kanji: "言葉", hiragana: "ことば", meaning: "word; language; speech", myanmar: "စကား၊ ဘာသာစကား" },
+                    { kanji: "着物", hiragana: "きもの", meaning: "kimono; traditional Japanese clothing", myanmar: "ဂျပန်ဝတ်စုံ (ကီမိုနို)" },
+                    { kanji: "ビザ", hiragana: "ビザ", meaning: "visa", myanmar: "ဗီဇာ" },
+                    { kanji: "初め", hiragana: "はじめ", meaning: "the beginning; start", myanmar: "အစ" },
+                    { kanji: "終わり", hiragana: "おわり", meaning: "the end; conclusion", myanmar: "အဆုံး" },
+                    { kanji: "こっち", hiragana: "こっち", meaning: "this way; this one (casual)", myanmar: "ဒီဘက်၊ ဒီတစ်ခု" },
+                    { kanji: "そっち", hiragana: "そっち", meaning: "that way; that one (casual)", myanmar: "အဲဒီဘက်၊ အဲဒီတစ်ခု" },
+                    { kanji: "あっち", hiragana: "あっち", meaning: "that way over there; that one over there (casual)", myanmar: "ဟိုဘက်၊ ဟိုတစ်ခု" },
+                    { kanji: "どっち", hiragana: "どっち", meaning: "which (of two); which way (casual)", myanmar: "ဘယ်တစ်ခု၊ ဘယ်ဘက်" },
+                    { kanji: "皆で", hiragana: "みんなで", meaning: "all together; by everyone", myanmar: "အားလုံးပေါင်း" },
+                    { kanji: "～けど", hiragana: "～けど", meaning: "…but; although (used to soften a statement)", myanmar: "…ပေမယ့်" },
+                    { kanji: "おなかがいっぱいです", hiragana: "おなかがいっぱいです", meaning: "full (after eating)", myanmar: "နံပြည့်နေပြီ" },
+                    { kanji: "よかったら", hiragana: "よかったら", meaning: "if you like; if you not mind", myanmar: "ကြိုက်လျှင်၊ မပြဿနာလျှင်" },
+                    { kanji: "色々", hiragana: "いろいろ", meaning: "various; many kinds", myanmar: "အမျိုးမျိုး" }
+                ],
+                "Lesson 21": [
+                    { kanji: "思います", hiragana: "おもいます", dictionary: "思う", meaning: "to think; to consider", myanmar: "စဉ်းစားသည်၊ ထင်သည်" },
+                    { kanji: "言います", hiragana: "いいます", dictionary: "言う", meaning: "to say; to speak", myanmar: "ပြောသည်" },
+                    { kanji: "勝ちます", hiragana: "かちます", dictionary: "勝つ", meaning: "to win", myanmar: "အနိုင်ရသည်" },
+                    { kanji: "負けます", hiragana: "まけます", dictionary: "負ける", meaning: "to lose", myanmar: "ရှုံးသည်" },
+                    { kanji: "あります［お祭りが］", hiragana: "あります［おまつりが］", dictionary: "ある", meaning: "to be (existence) [festival]", myanmar: "ရှိသည် [ပွဲတော်ရှိသည်]" },
+                    { kanji: "役に立ちます", hiragana: "やくにたちます", dictionary: "役に立つ", meaning: "to be useful; to be helpful", myanmar: "အသုံးဝင်သည်" },
+                    { kanji: "動きます", hiragana: "うごきます", dictionary: "動く", meaning: "to move", myanmar: "ရွှေ့လျားသည်၊ လှုပ်ရှားသည်" },
+                    { kanji: "やめます［会社を～］", hiragana: "やめます［かいしゃを～］", dictionary: "やめる", meaning: "to quit; to stop [a company]", myanmar: "အလုပ်နားသည် [ကုမ္ပဏီနားထောင်သည်]" },
+                    { kanji: "気をつけます", hiragana: "きをつけます", dictionary: "気をつける", meaning: "to be careful; to pay attention", myanmar: "ဂရုစိုက်သည်" },
+                    { kanji: "無駄［な］", hiragana: "むだ［な］", meaning: "wasteful; useless", myanmar: "အလွန်မရှိအကျိုးမရှိ" },
+                    { kanji: "不便［な］", hiragana: "ふべん［な］", meaning: "inconvenient", myanmar: "မလွယ်ကူသော" },
+                    { kanji: "すごい", hiragana: "すごい", meaning: "amazing; incredible", myanmar: "အံ့သြဖွယ်၊ ထူးခြားသော" },
+                    { kanji: "本当", hiragana: "ほんとう", meaning: "truth; reality", myanmar: "အမှန်တရား" },
+                    { kanji: "嘘", hiragana: "うそ", meaning: "lie; falsehood", myanmar: "အ嘘၊ မမှန်သော" },
+                    { kanji: "自動車", hiragana: "じどうしゃ", meaning: "automobile; car", myanmar: "ကား" },
+                    { kanji: "交通", hiragana: "こうつう", meaning: "traffic; transportation", myanmar: "ရထား၊ ယာဉ်ကြော" },
+                    { kanji: "物価", hiragana: "ぶっか", meaning: "prices; cost of living", myanmar: "ဈေးနှုန်း" },
+                    { kanji: "放送", hiragana: "ほうそう", meaning: "broadcast; transmission", myanmar: "ထုတ်လွှင့်မှု" },
+                    { kanji: "ニュース", hiragana: "ニュース", meaning: "news", myanmar: "သတင်း" },
+                    { kanji: "アニメ", hiragana: "アニメ", meaning: "animation; anime", myanmar: "ကာတွန်း" },
+                    { kanji: "マンガ", hiragana: "マンガ", meaning: "comic; manga", myanmar: "မန်ဂါ" },
+                    { kanji: "デザイン", hiragana: "デザイン", meaning: "design", myanmar: "ဒီဇိုင်း" },
+                    { kanji: "夢", hiragana: "ゆめ", meaning: "dream", myanmar: "အိပ်မက်" },
+                    { kanji: "天才", hiragana: "てんさい", meaning: "genius", myanmar: "ကြယ်ပွင့်" },
+                    { kanji: "意見", hiragana: "いけん", meaning: "opinion; view", myanmar: "အမြင်" },
+                    { kanji: "話", hiragana: "はなし", meaning: "talk; story", myanmar: "စကားပြော၊ ပုံပြင်" },
+                    { kanji: "地球", hiragana: "ちきゅう", meaning: "the Earth; globe", myanmar: "ကမ္ဘာ" },
+                    { kanji: "月", hiragana: "つき", meaning: "moon; month", myanmar: "လ" },
+                    { kanji: "最近", hiragana: "さいきん", meaning: "recently; these days", myanmar: "မကြာသေးခင်က၊ ယနေ့ခေတ်" },
+                    { kanji: "多分", hiragana: "たぶん", meaning: "probably; maybe", myanmar: "နိုင်လည်း၊ ဖြစ်နိုင်သည်" },
+                    { kanji: "きっと", hiragana: "きっと", meaning: "surely; definitely", myanmar: "သေချာစွာ" },
+                    { kanji: "本当に", hiragana: "ほんとうに", meaning: "really; truly", myanmar: "အစစ်အမှန်" },
+                    { kanji: "そんなに", hiragana: "そんなに", meaning: "so; that much", myanmar: "အဲဒီအတိုင်း" },
+                    { kanji: "～について", hiragana: "～について", meaning: "about; concerning", myanmar: "…အကြောင်း" },
+                    { kanji: "久しぶりですね", hiragana: "ひさしぶりですね", meaning: "long time no see", myanmar: "အကြာကြီးနောက်" },
+                    { kanji: "～でも飲みませんか", hiragana: "～でものみませんか", meaning: "won't you have (a drink)?", myanmar: "…တစ်ခါ သောက်မလား?" },
+                    { kanji: "もちろん", hiragana: "もちろん", meaning: "of course; certainly", myanmar: "တကယ်ပါ" },
+                    { kanji: "もう帰らないと", hiragana: "もうかえらないと", meaning: "I have to go home now", myanmar: "အခုနောက်ပြန်ရမယ်" }
+                ],
+                "Lesson 22": [
+                    { kanji: "着ます", hiragana: "きます", dictionary: "着る", meaning: "to wear; put on (clothes on the upper body)", myanmar: "ဝတ်သည် (ကိုယ်အထက်ပိုင်းအဝတ်)" },
+                    { kanji: "履きます", hiragana: "はきます", dictionary: "履く", meaning: "to wear; put on (shoes, pants, etc.)", myanmar: "ဝတ်သည် (ဘောင်းဘီ၊ ဖိနပ် စသည်)" },
+                    { kanji: "かぶります", hiragana: "かぶります", dictionary: "かぶる", meaning: "to put on (a hat, cap)", myanmar: "ဦးထုပ် တပ်သည်" },
+                    { kanji: "掛けます", hiragana: "かけます", dictionary: "掛ける", meaning: "to put on (glasses)", myanmar: "မျက်မှန် တပ်သည်" },
+                    { kanji: "します", hiragana: "します", dictionary: "する", meaning: "to wear (accessories, tie, etc.)", myanmar: "အလှဆင်ပစ္စည်း (နက်တိုင် စသည်) ဝတ်သည်" },
+                    { kanji: "生まれます", hiragana: "うまれます", dictionary: "生まれる", meaning: "to be born", myanmar: "မွေးဖွားသည်" },
+                    { kanji: "私たち", hiragana: "わたしたち", meaning: "we; us", myanmar: "ကျွန်တော်တို့၊ ကျွန်မတို့" },
+                    { kanji: "コート", hiragana: "コート", meaning: "coat; overcoat", myanmar: "အလောင်းထည်အဖျား အထည်" },
+                    { kanji: "セーター", hiragana: "セーター", meaning: "sweater", myanmar: "ဆွယ်တာ" },
+                    { kanji: "スーツ", hiragana: "スーツ", meaning: "suit", myanmar: "စုံဝတ်စုံ" },
+                    { kanji: "帽子", hiragana: "ぼうし", meaning: "hat; cap", myanmar: "ဦးထုပ်" },
+                    { kanji: "眼鏡", hiragana: "めがね", meaning: "glasses", myanmar: "မျက်မှန်" },
+                    { kanji: "ケーキ", hiragana: "ケーキ", meaning: "cake", myanmar: "ကိတ်မုန့်" },
+                    { kanji: "お弁当", hiragana: "おべんとう", meaning: "boxed lunch; bento", myanmar: "ထမင်းဘူး" },
+                    { kanji: "ロボット", hiragana: "ロボット", meaning: "robot", myanmar: "ရိုဘော့" },
+                    { kanji: "ユーモア", hiragana: "ユーモア", meaning: "humor", myanmar: "စိတ္ထူးစရာ၊ ဟာသ" },
+                    { kanji: "都合", hiragana: "つごう", meaning: "convenience; circumstances", myanmar: "အဆင်ပြေမှု၊ အခြေအနေ" },
+                    { kanji: "よく", hiragana: "よく", meaning: "often; well", myanmar: "မကြာခဏ၊ အရမ်းကောင်းစွာ" },
+                    { kanji: "えーと", hiragana: "えーと", meaning: "let me see…; well… (hesitation)", myanmar: "အဓိပ္ပာယ်ပြန်လည် စဉ်းစားနေစဉ် အသုံးပြုသော စကား" },
+                    { kanji: "おめでとうございます", hiragana: "おめでとうございます", meaning: "congratulations", myanmar: "ဂုဏ်ယူပါတယ်" },
+                    { kanji: "お探しですか", hiragana: "おさがしですか", meaning: "Are you looking for …?", myanmar: "မင်း/ခင်ဗျား …ကို ရှာနေပါသလား" },
+                    { kanji: "では", hiragana: "では", meaning: "well then; in that case", myanmar: "အဲဒီအတွက်၊ ဒါဆိုရင်" },
+                    { kanji: "こちら", hiragana: "こちら", meaning: "this way; here; this one (polite)", myanmar: "ဒီဘက်၊ ဒီနေရာ၊ ဤတစ်ခု" },
+                    { kanji: "家賃", hiragana: "やちん", meaning: "rent (for a house/apartment)", myanmar: "အိမ်ငှားခ" },
+                    { kanji: "ダイニングキッチン", hiragana: "ダイニングキッチン", meaning: "dining kitchen", myanmar: "စားပွဲခုံနှင့် မီးဖိုခန်းပေါင်း" },
+                    { kanji: "和室", hiragana: "わしつ", meaning: "Japanese-style room", myanmar: "ဂျပန်စတိုင် အခန်း (畳)" },
+                    { kanji: "押し入れ", hiragana: "おしいれ", meaning: "closet (Japanese-style)", myanmar: "ဂျပန်စတိုင် ပစ္စည်းထည့်ခန်း" },
+                    { kanji: "布団", hiragana: "ふとん", meaning: "futon (Japanese bedding)", myanmar: "ဖူတုံ (ဂျပန်အိပ်ရာ)" }
+                ],
+                "Lesson 23": [
+                    { kanji: "聞きます", hiragana: "ききます", dictionary: "聞く", meaning: "to ask; to listen", myanmar: "မေးသည်၊ နားထောင်သည်" },
+                    { kanji: "回します", hiragana: "まわします", dictionary: "回す", meaning: "to turn; to rotate", myanmar: "လှည့်သည်" },
+                    { kanji: "引きます", hiragana: "ひきます", dictionary: "引く", meaning: "to pull; to draw", myanmar: "ဆွဲသည်" },
+                    { kanji: "変えます", hiragana: "かえます", dictionary: "変える", meaning: "to change; to exchange", myanmar: "ပြောင်းသည်၊ အစားထိုးသည်" },
+                    { kanji: "触ります", hiragana: "さわります", dictionary: "触る", meaning: "to touch (something)", myanmar: "ထိသည်" },
+                    { kanji: "出ます", hiragana: "でます", dictionary: "出る", meaning: "to go out; to leave; to come out; to attend", myanmar: "ထွက်သည်၊ ပေါ်ထွက်သည်၊ ပါဝင်သည်" },
+                    { kanji: "歩きます", hiragana: "あるきます", dictionary: "歩く", meaning: "to walk", myanmar: "လမ်းလျှောက်သည်" },
+                    { kanji: "渡ります", hiragana: "わたります", dictionary: "渡る", meaning: "to cross (a bridge, road, etc.)", myanmar: "ဖြတ်သည်၊ ကူးသည်" },
+                    { kanji: "曲がります", hiragana: "まがります", dictionary: "曲がる", meaning: "to turn (left/right)", myanmar: "လှည့်သည် (ဘယ်/ညာ)" },
+                    { kanji: "寂しい", hiragana: "さびしい", meaning: "lonely; lonesome", myanmar: "အထီးကျန်" },
+                    { kanji: "お湯", hiragana: "おゆ", meaning: "hot water", myanmar: "ပူသောရေ" },
+                    { kanji: "音", hiragana: "おと", meaning: "sound; noise", myanmar: "အသံ" },
+                    { kanji: "サイズ", hiragana: "サイズ", meaning: "size", myanmar: "အရွယ်အစား" },
+                    { kanji: "故障", hiragana: "こしょう", meaning: "breakdown; failure (of a machine, car, etc.)", myanmar: "ပျက်စီးမှု (စက်၊ ကား စသည်)" },
+                    { kanji: "道", hiragana: "みち", meaning: "street; road; way", myanmar: "လမ်း" },
+                    { kanji: "交差点", hiragana: "こうさてん", meaning: "intersection; crossing", myanmar: "လမ်းထိပ် (လမ်းထိပ်ခွဲ)" },
+                    { kanji: "信号", hiragana: "しんごう", meaning: "traffic light; signal", myanmar: "အနီအ초록မီး၊ ညွှန်တံ" },
+                    { kanji: "角", hiragana: "かど", meaning: "corner (of a street, building, etc.)", myanmar: "လမ်းထောင့်၊ အထောင့်" },
+                    { kanji: "橋", hiragana: "はし", meaning: "bridge", myanmar: "တံတား" },
+                    { kanji: "駐車場", hiragana: "ちゅうしゃじょう", meaning: "parking lot", myanmar: "ကားထောင့်၊ ကားရပ်နားရာ" },
+                    { kanji: "建物", hiragana: "たてもの", meaning: "building", myanmar: "အဆောက်အဦ" },
+                    { kanji: "何回も", hiragana: "なんかいも", meaning: "many times; over and over", myanmar: "အကြိမ်များစွာ" },
+                    { kanji: "―目", hiragana: "―め", meaning: "the ―th (used for order)", myanmar: "မြောက်၊ အဆင့် (ဥပမာ: ပထမမြောက်၊ ဒုတိယမြောက်)" }
+                ],
+                "Lesson 24": [
+                    { kanji: "呉れます", hiragana: "くれます", dictionary: "くれる", meaning: "to give (to me / my family)", myanmar: "ပေးသည် (ကျွန်တော်/ကျွန်မဘက်ကို)" },
+                    { kanji: "直します", hiragana: "なおします", dictionary: "直す", meaning: "to repair, fix, correct", myanmar: "ပြန်လည်ပြင်ဆင်သည်၊ ပြင်ပေးသည်" },
+                    { kanji: "連れて行きます", hiragana: "つれていきます", dictionary: "連れていく", meaning: "to take (a person) along", myanmar: "တစ်ဦးတစ်ယောက်ကို ထိန်းသွားသည်" },
+                    { kanji: "連れて来ます", hiragana: "つれてきます", dictionary: "連れてくる", meaning: "to bring (a person) along", myanmar: "တစ်ဦးတစ်ယောက်ကို ထိန်းယူလာသည်" },
+                    { kanji: "送ります", hiragana: "おくります", dictionary: "送る", meaning: "to escort, accompany (a person); also “to send” (letters, parcels, etc.)", myanmar: "တစ်ဦးတစ်ယောက်ကို အတူသွားပေးသည်၊ စာ/ပစ္စည်း ပို့သည်" },
+                    { kanji: "紹介します", hiragana: "しょうかいします", dictionary: "紹介する", meaning: "to introduce", myanmar: "မိတ်ဆက်ပေးသည်" },
+                    { kanji: "案内します", hiragana: "あんないします", dictionary: "案内する", meaning: "to guide, show around, lead the way", myanmar: "လမ်းညွှန်ပေးသည်၊ လမ်းပြပေးသည်" },
+                    { kanji: "説明します", hiragana: "せつめいします", dictionary: "説明する", meaning: "to explain", myanmar: "ရှင်းပြသည်" },
+                    { kanji: "おじいさん", hiragana: "おじいさん", meaning: "grandfather; old man", myanmar: "အဘိုး၊ အရွယ်ရင့်သူ" },
+                    { kanji: "おばあさん", hiragana: "おばあさん", meaning: "grandmother; old woman", myanmar: "အဘွား၊ အရွယ်ရင့်မိန်းမ" },
+                    { kanji: "じゅんび", hiragana: "じゅんび", meaning: "preparation", myanmar: "ပြင်ဆင်မှု" },
+                    { kanji: "引っ越し", hiragana: "ひっこし", meaning: "moving (to a new house)", myanmar: "အိမ်ပြောင်းခြင်း" },
+                    { kanji: "お菓子", hiragana: "おかし", meaning: "sweets; snacks", myanmar: "မုန့်၊ အလွယ်စားအစားအစာ" },
+                    { kanji: "ホームステイ", hiragana: "ホームステイ", meaning: "homestay (living with a host family)", myanmar: "အိမ်ရှင်အဖွဲ့နဲ့အတူနေရခြင်း" },
+                    { kanji: "全部", hiragana: "ぜんぶ", meaning: "all; everything", myanmar: "အားလုံး" },
+                    { kanji: "自分で", hiragana: "じぶんで", meaning: "by oneself; do it yourself", myanmar: "ကိုယ်တိုင်" },
+                    { kanji: "他に", hiragana: "ほかに", meaning: "besides; in addition; other", myanmar: "အခြား၊ ထပ်မံ၍" }
+                ],
+                "Lesson 25": [
+                    { kanji: "考えます", hiragana: "かんがえます", dictionary: "考える", meaning: "to think; to consider", myanmar: "စဉ်းစားသည်" },
+                    { kanji: "着きます", hiragana: "つきます", dictionary: "着く", meaning: "to arrive (at a place)", myanmar: "ရောက်သည်" },
+                    { kanji: "取ります", hiragana: "とります", dictionary: "取る", meaning: "to grow old; to take", myanmar: "ယူသည်၊ အိုသည်" },
+                    { kanji: "足ります", hiragana: "たります", dictionary: "足りる", meaning: "to be enough; to suffice", myanmar: "လုံလောက်သည်" },
+                    { kanji: "億", hiragana: "おく", meaning: "hundred million", myanmar: "သန်းတစ်ရာ (၁၀၀,၀၀၀,၀၀၀)" },
+                    { kanji: "田舎", hiragana: "いなか", meaning: "countryside; hometown", myanmar: "ကျေးလက်၊ မွေးရပ်" },
+                    { kanji: "チャンス", hiragana: "チャンス", meaning: "chance; opportunity", myanmar: "အခွင့်အရေး" },
+                    { kanji: "意味", hiragana: "いみ", meaning: "meaning", myanmar: "အဓိပ္ပာယ်" },
+                    { kanji: "転勤", hiragana: "てんきん", meaning: "job transfer", myanmar: "အလုပ်အပြောင်းအရွှေ့" },
+                    { kanji: "事", hiragana: "こと", meaning: "thing; matter; fact", myanmar: "အရာ၊ အမှု" },
+                    { kanji: "暇", hiragana: "ひま", meaning: "free time; leisure", myanmar: "အားလပ်ချိန်" },
+                    { kanji: "もし", hiragana: "もし", meaning: "if ...", myanmar: "အကယ်၍" },
+                    { kanji: "もしもし", hiragana: "もしもし", meaning: "hello (on the phone)", myanmar: "ဟယ်လို (ဖုန်းမပြောချိန်)" },
+                    { kanji: "お世話になりました", hiragana: "おせわになりました", meaning: "Thank you for everything.", myanmar: "အကူအညီပေးသဖြင့် ကျေးဇူးတင်ပါသည်" },
+                    { kanji: "頑張ります", hiragana: "がんばります", dictionary: "頑張る", meaning: "I’ll do my best.", myanmar: "ကြိုးစားပါမည်" },
+                    { kanji: "どうぞお元気で", hiragana: "どうぞおげんきで", meaning: "Please take care of yourself.", myanmar: "ကျန်းမာအောင်ဂရုစိုက်ပါ" }
+                ]
+            },
+            N4: {
+                "Lesson 26": [
+                    { kanji: "見ます", hiragana: "みます", meaning: "to see, to look at" },
+                    { kanji: "聞きます", hiragana: "ききます", meaning: "to listen, to hear" },
+                    { kanji: "書きます", hiragana: "かきます", meaning: "to write" },
+                    { kanji: "読みます", hiragana: "よみます", meaning: "to read" },
+                    { kanji: "食べます", hiragana: "たべます", meaning: "to eat" },
+                    { kanji: "飲みます", hiragana: "のみます", meaning: "to drink" }
+                ],
+                "Lesson 27": [
+                    { kanji: "おきます", hiragana: "おきます", meaning: "to put, to place" },
+                    { kanji: "つくります", hiragana: "つくります", meaning: "to make, to produce" },
+                    { kanji: "うります", hiragana: "うります", meaning: "to sell" },
+                    { kanji: "しります", hiragana: "しります", meaning: "to know" },
+                    { kanji: "すみます", hiragana: "すみます", meaning: "to live, to reside" }
+                ],
+                "Lesson 28": [
+                    { kanji: "いけばな", hiragana: "いけばな", meaning: "Ikebana (Japanese flower arrangement)" },
+                    { kanji: "りょこう", hiragana: "りょこう", meaning: "travel" },
+                    { kanji: "おんせん", hiragana: "おんせん", meaning: "hot spring" },
+                    { kanji: "おてら", hiragana: "おてら", meaning: "temple" },
+                    { kanji: "じんじゃ", hiragana: "じんじゃ", meaning: "Shinto shrine" }
+                ],
+                "Lesson 29": [
+                    { kanji: "はじまります", hiragana: "はじまります", meaning: "to begin, to start" },
+                    { kanji: "おわります", hiragana: "おわります", meaning: "to finish, to end" },
+                    { kanji: "つづきます", hiragana: "つづきます", meaning: "to continue" },
+                    { kanji: "みつけます", hiragana: "みつけます", meaning: "to find" },
+                    { kanji: "かんがえます", hiragana: "かんがえます", meaning: "to think, to consider" }
+                ],
+                "Lesson 30": [
+                    { kanji: "ひこうき", hiragana: "ひこうき", meaning: "airplane" },
+                    { kanji: "ふね", hiragana: "ふね", meaning: "ship, boat" },
+                    { kanji: "でんしゃ", hiragana: "でんしゃ", meaning: "electric train" },
+                    { kanji: "バス", hiragana: "バス", meaning: "bus" },
+                    { kanji: "くるま", hiragana: "くるま", meaning: "car" }
+                ],
+                "Lesson 31": [
+                    { kanji: "ねます", hiragana: "ねます", meaning: "to sleep" },
+                    { kanji: "おきます", hiragana: "おきます", meaning: "to wake up" },
+                    { kanji: "はたらきます", hiragana: "はたらきます", meaning: "to work" },
+                    { kanji: "やすみます", hiragana: "やすみます", meaning: "to rest, to take a day off" },
+                    { kanji: "べんきょうします", hiragana: "べんきょうします", meaning: "to study" }
+                ],
+                "Lesson 32": [
+                    { kanji: "おなまえは", hiragana: "おなまえは", meaning: "What is your name?" },
+                    { kanji: "わたしは", hiragana: "わたしは", meaning: "I am..." },
+                    { kanji: "せんせい", hiragana: "せんせい", meaning: "teacher" },
+                    { kanji: "がくせい", hiragana: "がくせい", meaning: "student" },
+                    { kanji: "かいしゃいん", hiragana: "かいしゃいん", meaning: "company employee" }
+                ],
+                "Lesson 33": [
+                    { kanji: "いけばな", hiragana: "いけばな", meaning: "Japanese flower arrangement" },
+                    { kanji: "ちゃどう", hiragana: "ちゃどう", meaning: "tea ceremony" },
+                    { kanji: "しょどう", hiragana: "しょどう", meaning: "calligraphy" },
+                    { kanji: "きもの", hiragana: "きもの", meaning: "kimono" },
+                    { kanji: "さくら", hiragana: "さくら", meaning: "cherry blossom" }
+                ],
+                "Lesson 34": [
+                    { kanji: "ねだん", hiragana: "ねだん", meaning: "price" },
+                    { kanji: "おつり", hiragana: "おつり", meaning: "change (money)" },
+                    { kanji: "きっぷ", hiragana: "きっぷ", meaning: "ticket" },
+                    { kanji: "かいもの", hiragana: "かいもの", meaning: "shopping" },
+                    { kanji: "おかね", hiragana: "おかね", meaning: "money" }
+                ],
+                "Lesson 35": [
+                    { kanji: "はれます", hiragana: "はれます", meaning: "to clear up (weather)" },
+                    { kanji: "くもります", hiragana: "くもります", meaning: "to get cloudy" },
+                    { kanji: "あめがふります", hiragana: "あめがふります", meaning: "to rain" },
+                    { kanji: "ゆきがふります", hiragana: "ゆきがふります", meaning: "to snow" },
+                    { kanji: "かぜがふきます", hiragana: "かぜがふきます", meaning: "to blow (wind)" }
+                ],
+                "Lesson 36": [
+                    { kanji: "かんじ", hiragana: "かんじ", meaning: "kanji" },
+                    { kanji: "ひらがな", hiragana: "ひらがな", meaning: "hiragana" },
+                    { kanji: "かたかな", hiragana: "かたかな", meaning: "katakana" },
+                    { kanji: "ローマじ", hiragana: "ローマじ", meaning: "Roman letters" },
+                    { kanji: "ぶんしょう", hiragana: "ぶんしょう", meaning: "sentence" }
+                ],
+                "Lesson 37": [
+                    { kanji: "おにぎり", hiragana: "おにぎり", meaning: "rice ball" },
+                    { kanji: "おべんとう", hiragana: "おべんとう", meaning: "boxed lunch" },
+                    { kanji: "おにぎり", hiragana: "おにぎり", meaning: "rice ball" },
+                    { kanji: "おにぎり", hiragana: "おにぎり", meaning: "rice ball" },
+                    { kanji: "おにぎり", hiragana: "おにぎり", meaning: "rice ball" }
+                ],
+                "Lesson 38": [
+                    { kanji: "ひゃく", hiragana: "ひゃく", meaning: "100" },
+                    { kanji: "せん", hiragana: "せん", meaning: "1,000" },
+                    { kanji: "まん", hiragana: "まん", meaning: "10,000" },
+                    { kanji: "じゅうまん", hiragana: "じゅうまん", meaning: "100,000" },
+                    { kanji: "ひゃくまん", hiragana: "ひゃくまん", meaning: "1,000,000" }
+                ],
+                "Lesson 39": [
+                    { kanji: "たべます", hiragana: "たべます", meaning: "to eat" },
+                    { kanji: "のみます", hiragana: "のみます", meaning: "to drink" },
+                    { kanji: "かいます", hiragana: "かいます", meaning: "to buy" },
+                    { kanji: "みます", hiragana: "みます", meaning: "to see" },
+                    { kanji: "ききます", hiragana: "ききます", meaning: "to listen" }
+                ],
+                "Lesson 40": [
+                    { kanji: "あるきます", hiragana: "あるきます", meaning: "to walk" },
+                    { kanji: "はしります", hiragana: "はしります", meaning: "to run" },
+                    { kanji: "およぎます", hiragana: "およぎます", meaning: "to swim" },
+                    { kanji: "とびます", hiragana: "とびます", meaning: "to fly" },
+                    { kanji: "とまります", hiragana: "とまります", meaning: "to stop" }
+                ],
+                "Lesson 41": [
+                    { kanji: "あたま", hiragana: "あたま", meaning: "head" },
+                    { kanji: "かお", hiragana: "かお", meaning: "face" },
+                    { kanji: "みみ", hiragana: "みみ", meaning: "ear" },
+                    { kanji: "め", hiragana: "め", meaning: "eye" },
+                    { kanji: "はな", hiragana: "はな", meaning: "nose" }
+                ],
+                "Lesson 42": [
+                    { kanji: "あつい", hiragana: "あつい", meaning: "hot" },
+                    { kanji: "さむい", hiragana: "さむい", meaning: "cold" },
+                    { kanji: "おおきい", hiragana: "おおきい", meaning: "big" },
+                    { kanji: "ちいさい", hiragana: "ちいさい", meaning: "small" },
+                    { kanji: "たかい", hiragana: "たかい", meaning: "expensive, tall" }
+                ],
+                "Lesson 43": [
+                    { kanji: "くるま", hiragana: "くるま", meaning: "car" },
+                    { kanji: "でんしゃ", hiragana: "でんしゃ", meaning: "train" },
+                    { kanji: "ひこうき", hiragana: "ひこうき", meaning: "airplane" },
+                    { kanji: "バス", hiragana: "バス", meaning: "bus" },
+                    { kanji: "タクシー", hiragana: "タクシー", meaning: "taxi" }
+                ],
+                "Lesson 44": [
+                    { kanji: "げんき", hiragana: "げんき", meaning: "healthy, energetic" },
+                    { kanji: "ゆうめい", hiragana: "ゆうめい", meaning: "famous" },
+                    { kanji: "しずか", hiragana: "しずか", meaning: "quiet" },
+                    { kanji: "にぎやか", hiragana: "にぎやか", meaning: "lively" },
+                    { kanji: "きれい", hiragana: "きれい", meaning: "beautiful, clean" }
+                ],
+                "Lesson 45": [
+                    { kanji: "いちばん", hiragana: "いちばん", meaning: "the most, number one" },
+                    { kanji: "いちど", hiragana: "いちど", meaning: "once" },
+                    { kanji: "にど", hiragana: "にど", meaning: "twice" },
+                    { kanji: "さんど", hiragana: "さんど", meaning: "three times" },
+                    { kanji: "なんど", hiragana: "なんど", meaning: "how many times" }
+                ],
+                "Lesson 46": [
+                    { kanji: "えき", hiragana: "えき", meaning: "station" },
+                    { kanji: "びょういん", hiragana: "びょういん", meaning: "hospital" },
+                    { kanji: "ぎんこう", hiragana: "ぎんこう", meaning: "bank" },
+                    { kanji: "ゆうびんきょく", hiragana: "ゆうびんきょく", meaning: "post office" },
+                    { kanji: "くうこう", hiragana: "くうこう", meaning: "airport" }
+                ],
+                "Lesson 47": [
+                    { kanji: "あに", hiragana: "あに", meaning: "my older brother" },
+                    { kanji: "あね", hiragana: "あね", meaning: "my older sister" },
+                    { kanji: "おとうと", hiragana: "おとうと", meaning: "my younger brother" },
+                    { kanji: "いもうと", hiragana: "いもうと", meaning: "my younger sister" },
+                    { kanji: "ちち", hiragana: "ちち", meaning: "my father" }
+                ],
+                "Lesson 48": [
+                    { kanji: "にほん", hiragana: "にほん", meaning: "Japan" },
+                    { kanji: "アメリカ", hiragana: "アメリカ", meaning: "America" },
+                    { kanji: "ちゅうごく", hiragana: "ちゅうごく", meaning: "China" },
+                    { kanji: "インド", hiragana: "インド", meaning: "India" },
+                    { kanji: "フランス", hiragana: "フランス", meaning: "France" }
+                ],
+                "Lesson 49": [
+                    { kanji: "しゅみ", hiragana: "しゅみ", meaning: "hobby" },
+                    { kanji: "スポーツ", hiragana: "スポーツ", meaning: "sports" },
+                    { kanji: "おんがく", hiragana: "おんがく", meaning: "music" },
+                    { kanji: "えいが", hiragana: "えいが", meaning: "movie" },
+                    { kanji: "りょうり", hiragana: "りょうり", meaning: "cooking" }
+                ],
+                "Lesson 50": [
+                    { kanji: "ねん", hiragana: "ねん", meaning: "year" },
+                    { kanji: "がつ", hiragana: "がつ", meaning: "month" },
+                    { kanji: "にち", hiragana: "にち", meaning: "day" },
+                    { kanji: "しゅう", hiragana: "しゅう", meaning: "week" },
+                    { kanji: "じかん", hiragana: "じかん", meaning: "time, hour" }
+                ]
+            }
         };
 
         // --- DOM Elements ---
+        const levelSelectionSection = document.getElementById('level-selection');
         const lessonSelectionSection = document.getElementById('lesson-selection');
         const modeSelectionSection = document.getElementById('mode-selection');
         const settingsScreen = document.getElementById('settings-screen');
         const revisionSection = document.getElementById('revision-section');
+        const listViewSection = document.getElementById('list-view-section');
         const finishScreen = document.getElementById('finish-screen');
         const lessonCheckboxesContainer = document.getElementById('lesson-checkboxes');
         const startRevisionBtn = document.getElementById('start-revision-btn');
@@ -681,6 +848,7 @@
         const timedWordModeBtn = document.getElementById('timed-word-mode-btn');
         const timedMeaningModeBtn = document.getElementById('timed-meaning-mode-btn');
         const backToLessonsBtn = document.getElementById('back-to-lessons-btn');
+        const backToLevelsBtn = document.getElementById('back-to-levels-btn');
         const backFromRevisionBtn = document.getElementById('back-from-revision-btn');
         const flashcard = document.getElementById('flashcard');
         const cardFrontText = document.getElementById('card-front-text');
@@ -693,14 +861,25 @@
         const flipDelayInput = document.getElementById('flip-delay');
         const nextDelayInput = document.getElementById('next-delay');
         const pauseBtn = document.getElementById('pause-btn');
+        const listViewBtn = document.getElementById('list-view-btn');
+        const backFromListBtn = document.getElementById('back-from-list-btn');
+        const wordListContainer = document.getElementById('word-list-container');
+        const markForLaterBtn = document.getElementById('mark-for-later-btn');
+        const reviewLaterBtn = document.getElementById('review-later-btn');
+        const laterListCount = document.getElementById('later-list-count');
 
         // New DOM Elements for word count
         const progressDisplay = document.getElementById('progress-display');
         const wordCountDisplay = document.getElementById('word-count-display');
 
+        // New Level Selection Buttons
+        const n5LevelBtn = document.getElementById('n5-level-btn');
+        const n4LevelBtn = document.getElementById('n4-level-btn');
+
         // --- State Variables ---
+        let selectedLevel = null;
         let selectedLessons = [];
-        let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning'
+        let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning', 'list-view'
         let shuffledWords = [];
         let currentIndex = 0;
         let nextWordTimer = null;
@@ -710,9 +889,15 @@
         let timerSecondsLeft = 0;
         let flipDelay = 0;
         let nextDelay = 0;
+        let revisedLaterList = [];
 
         // --- Functions ---
         
+        function updateLaterListCount() {
+            laterListCount.textContent = revisedLaterList.length;
+            reviewLaterBtn.disabled = revisedLaterList.length === 0;
+        }
+
         // Fisher-Yates shuffle algorithm
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -722,17 +907,20 @@
             return array;
         }
 
-        function createLessonCheckboxes() {
-            const lessonKeys = Object.keys(vocabularyData);
+        function createLessonCheckboxes(level) {
+            // Clear existing checkboxes
+            lessonCheckboxesContainer.innerHTML = '';
+            
+            const lessonKeys = Object.keys(vocabularyData[level]);
 
             // Create 'All' checkbox first
             const allContainer = document.createElement('label');
             allContainer.classList.add('checkbox-container');
-            allContainer.id = 'all-checkbox-container'; // Add an ID for easy targeting
+            allContainer.id = 'all-checkbox-container';
             
             const allCheckbox = document.createElement('input');
             allCheckbox.type = 'checkbox';
-            allCheckbox.name = 'lesson-all';
+            allCheckbox.name = `lesson-${level}-all`;
             allCheckbox.value = 'all';
 
             const allSpan = document.createElement('span');
@@ -753,7 +941,6 @@
                 checkbox.value = key;
 
                 const span = document.createElement('span');
-                // レッスン番号のみを取得
                 span.textContent = key.split(' ')[1];
 
                 container.appendChild(checkbox);
@@ -767,23 +954,57 @@
             if (finishTimer) clearInterval(finishTimer);
         }
 
-        function showLessonSelection() {
+        function showLevelSelection() {
             clearTimers();
             isPaused = false;
-            pauseBtn.textContent = 'Pause';
+            if (pauseBtn) pauseBtn.textContent = 'Pause';
+            levelSelectionSection.classList.remove('hidden');
+            lessonSelectionSection.classList.add('hidden');
+            modeSelectionSection.classList.add('hidden');
+            settingsScreen.classList.add('hidden');
+            revisionSection.classList.add('hidden');
+            listViewSection.classList.add('hidden');
+            finishScreen.classList.add('hidden');
+            statusMessage.textContent = '';
+            timerDisplay.textContent = '';
+            updateLaterListCount();
+        }
+
+        function showLessonSelection(level) {
+            selectedLevel = level;
+            clearTimers();
+            levelSelectionSection.classList.add('hidden');
             lessonSelectionSection.classList.remove('hidden');
             modeSelectionSection.classList.add('hidden');
             settingsScreen.classList.add('hidden');
             revisionSection.classList.add('hidden');
+            listViewSection.classList.add('hidden');
             finishScreen.classList.add('hidden');
-            statusMessage.textContent = '';
-            timerDisplay.textContent = '';
+            
+            // Re-generate checkboxes for the selected level
+            createLessonCheckboxes(level);
+            startRevisionBtn.disabled = true; // Disable button until a lesson is selected
+            
+            // Manually remove selected classes and check states
+            const allCheckboxes = document.querySelectorAll('input[name="lesson"]');
+            allCheckboxes.forEach(cb => {
+                cb.checked = false;
+                cb.closest('label').classList.remove('selected');
+            });
+            const allLevelCheckbox = document.querySelector('input[name="lesson-' + level + '-all"]');
+            if (allLevelCheckbox) {
+                allLevelCheckbox.checked = false;
+                allLevelCheckbox.closest('label').classList.remove('selected');
+            }
         }
+
 
         function showModeSelection() {
             lessonSelectionSection.classList.add('hidden');
             modeSelectionSection.classList.remove('hidden');
             settingsScreen.classList.add('hidden');
+            revisionSection.classList.add('hidden');
+            listViewSection.classList.add('hidden');
         }
 
         function showSettingsScreen() {
@@ -795,11 +1016,10 @@
             selectedLessons = Array.from(document.querySelectorAll('input[name="lesson"]:checked')).map(cb => cb.value);
             
             if (selectedLessons.length === 0) {
-                // Should not happen as button is disabled, but for safety
                 return;
             }
             
-            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[lessonKey]);
+            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
             shuffledWords = shuffleArray(wordsToShuffle);
 
             showModeSelection();
@@ -813,8 +1033,10 @@
             
             if (currentMode.includes('timed')) {
                 pauseBtn.classList.remove('hidden');
+                markForLaterBtn.classList.add('hidden');
             } else {
                 pauseBtn.classList.add('hidden');
+                markForLaterBtn.classList.remove('hidden');
             }
 
             currentIndex = 0;
@@ -824,13 +1046,14 @@
             isFlipped = false;
             timerSecondsLeft = flipDelay;
             
-            // Set the total word count and initial progress
             wordCountDisplay.textContent = `Total words: ${shuffledWords.length}`;
             displayCurrentCard();
         }
         
         function updateCardDisplay() {
             const currentWord = shuffledWords[currentIndex];
+            if (!currentWord) return;
+
             const isWordFirst = currentMode.includes('word');
             
             const frontText = isWordFirst ? 
@@ -841,25 +1064,31 @@
                 `<span class="text-2xl text-sky-700">${currentWord?.myanmar ?? ""}</span><br><span class="text-2xl">${currentWord.meaning}</span>` : 
                 (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`);
 
-            // Update the visible front text immediately
             cardFrontText.innerHTML = frontText;
-
-            // This is the key change to fix the visual bug.
-            // We delay updating the back text until we are ready to flip,
-            // to prevent the new text from being briefly visible.
             cardBackText.innerHTML = backText;
         }
 
         function displayCurrentCard() {
             clearTimers();
             
-            flashcard.classList.remove('is-flipped');
-            
-            // Update the progress display
             progressDisplay.textContent = `Word ${currentIndex + 1} of ${shuffledWords.length}`;
 
-            // Wait for the CSS transition to complete before showing the next card.
-            // This prevents the new content from flashing prematurely.
+            // Check if the card is currently flipped
+            const isCardFlipped = flashcard.classList.contains('is-flipped');
+            
+            // If the card is flipped, un-flip it first
+            if (isCardFlipped) {
+                flashcard.classList.remove('is-flipped');
+                // Wait for the transition to finish before updating content
+                setTimeout(() => {
+                    updateCardDisplay();
+                }, 600); // Wait for the 0.6s transition
+            } else {
+                // If not flipped, update content immediately
+                updateCardDisplay();
+            }
+
+            // The rest of the logic can run after the display is updated
             setTimeout(() => {
                 statusMessage.textContent = '';
                 
@@ -875,7 +1104,7 @@
                         finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
                         if (finishTimerCounter <= 0) {
                             clearInterval(finishTimer);
-                            showLessonSelection();
+                            showLessonSelection(selectedLevel);
                         }
                     }, 1000);
                     return;
@@ -893,8 +1122,6 @@
                 isPaused = false;
                 pauseBtn.textContent = 'Pause';
                 
-                updateCardDisplay();
-
                 if (currentMode.includes('timed')) {
                     isFlipped = false;
                     timerSecondsLeft = flipDelay;
@@ -919,7 +1146,7 @@
                         }
                     }, 1000);
                 }
-            }, 100);
+            }, isCardFlipped ? 600 : 0); // Use the correct delay here
         }
 
         function togglePause() {
@@ -939,9 +1166,97 @@
             }
         }
 
+        // NEW: Function to display words in a list view
+        function startListView() {
+            currentMode = 'list-view';
+            modeSelectionSection.classList.add('hidden');
+            listViewSection.classList.remove('hidden');
+            
+            wordListContainer.innerHTML = ''; // Clear previous list
+
+            // Use shuffledWords from the latest selection
+            const wordsToList = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
+
+            wordsToList.forEach((word) => {
+                const wordItem = document.createElement('div');
+                wordItem.classList.add('bg-gray-50', 'rounded-xl', 'p-4', 'shadow-sm', 'hover:bg-gray-100', 'transition-colors');
+                
+                const kanjiHiragana = document.createElement('div');
+                kanjiHiragana.classList.add('text-lg', 'font-semibold', 'text-indigo-700');
+                kanjiHiragana.innerHTML = `${word.kanji} <span class="text-gray-500 font-normal">(${word.hiragana})</span>`;
+                
+                const meaning = document.createElement('div');
+                meaning.classList.add('text-gray-600', 'mt-1');
+                meaning.textContent = word.meaning;
+                
+                wordItem.appendChild(kanjiHiragana);
+                wordItem.appendChild(meaning);
+                
+                if (word.dictionary) {
+                    const dictionary = document.createElement('div');
+                    dictionary.classList.add('text-sm', 'text-gray-400', 'mt-1');
+                    dictionary.textContent = `Dict: ${word.dictionary}`;
+                    wordItem.appendChild(dictionary);
+                }
+                
+                if (word.myanmar) {
+                    const myanmar = document.createElement('div');
+                    myanmar.classList.add('text-sm', 'text-sky-700', 'mt-1');
+                    myanmar.textContent = `Myanmar: ${word.myanmar}`;
+                    wordItem.appendChild(myanmar);
+                }
+
+                wordListContainer.appendChild(wordItem);
+            });
+        }
+        
+        // NEW: Function to mark a word for later revision
+        function markForLater() {
+            const currentWord = shuffledWords[currentIndex];
+            if (currentWord) {
+                const isAlreadyMarked = revisedLaterList.some(word => word.kanji === currentWord.kanji);
+                if (!isAlreadyMarked) {
+                    revisedLaterList.push(currentWord);
+                    statusMessage.textContent = 'Word added to "Review Marked Words" list!';
+                    statusMessage.classList.remove('text-red-500');
+                    statusMessage.classList.add('text-green-500');
+                } else {
+                    statusMessage.textContent = 'This word is already in your list!';
+                    statusMessage.classList.remove('text-green-500');
+                    statusMessage.classList.add('text-red-500');
+                }
+                updateLaterListCount();
+            }
+        }
+
+        // NEW: Function to start a session with marked words
+        function startReviewLater() {
+            shuffledWords = [...revisedLaterList];
+            currentMode = 'manual-word'; // Or another default mode for marked words
+            modeSelectionSection.classList.add('hidden');
+            revisionSection.classList.remove('hidden');
+            
+            // Re-hide pause button and show mark button
+            pauseBtn.classList.add('hidden');
+            markForLaterBtn.classList.remove('hidden');
+            
+            currentIndex = 0;
+            isPaused = false;
+            isFlipped = false;
+            
+            wordCountDisplay.textContent = `Total words: ${shuffledWords.length}`;
+            displayCurrentCard();
+        }
+
         // --- Event Listeners ---
-        lessonCheckboxesContainer.addEventListener('change', (event) => {
-            const allCheckbox = document.querySelector('input[name="lesson-all"]');
+        // New Level Selection event listeners
+        n5LevelBtn.addEventListener('click', () => showLessonSelection('N5'));
+        n4LevelBtn.addEventListener('click', () => showLessonSelection('N4'));
+        backToLevelsBtn.addEventListener('click', showLevelSelection);
+
+        // Lesson Checkbox logic (updated to handle 'All' dynamically)
+        lessonSelectionSection.addEventListener('change', (event) => {
+            const allCheckbox = document.querySelector(`input[name="lesson-${selectedLevel}-all"]`);
             const lessonCheckboxes = document.querySelectorAll('input[name="lesson"]');
             
             // Handle 'All' checkbox
@@ -953,7 +1268,10 @@
             } else {
                 // If any individual lesson is unchecked, uncheck 'All'
                 const allChecked = Array.from(lessonCheckboxes).every(cb => cb.checked);
-                allCheckbox.checked = allChecked;
+                if (allCheckbox) {
+                    allCheckbox.checked = allChecked;
+                    allCheckbox.closest('label').classList.toggle('selected', allChecked);
+                }
             }
             
             // Update the 'selected' class for the clicked checkbox container
@@ -961,17 +1279,14 @@
                 event.target.closest('label').classList.toggle('selected', event.target.checked);
             }
             
-            // Update the 'All' checkbox container class based on its state
-            allCheckbox.closest('label').classList.toggle('selected', allCheckbox.checked);
-
             const checkedCount = document.querySelectorAll('input[name="lesson"]:checked').length;
             startRevisionBtn.disabled = checkedCount === 0;
         });
 
-
         startRevisionBtn.addEventListener('click', handleStartRevision);
         customizeBtn.addEventListener('click', showSettingsScreen);
         backFromSettingsBtn.addEventListener('click', showModeSelection);
+        listViewBtn.addEventListener('click', startListView);
 
         manualWordModeBtn.addEventListener('click', () => startRevision('manual-word'));
         manualMeaningModeBtn.addEventListener('click', () => startRevision('manual-meaning'));
@@ -984,15 +1299,24 @@
             }
         });
 
-        backToLessonsBtn.addEventListener('click', showLessonSelection);
-        backFromRevisionBtn.addEventListener('click', showLessonSelection);
+        backToLessonsBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
+        backFromRevisionBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
+        backFromListBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
         
         restartBtn.addEventListener('click', () => {
             clearTimers();
             isPaused = false;
             pauseBtn.textContent = 'Pause';
             
-            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[lessonKey]);
+            let wordsToShuffle = [];
+            if (shuffledWords.some(word => revisedLaterList.includes(word))) {
+                // We're reviewing the marked list, so we restart with it.
+                wordsToShuffle = [...revisedLaterList];
+            } else {
+                // We're reviewing lessons, so restart with the original selection.
+                wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
+            }
+            
             shuffledWords = shuffleArray(wordsToShuffle);
             startRevision(currentMode);
         });
@@ -1014,9 +1338,12 @@
         });
         
         pauseBtn.addEventListener('click', togglePause);
+        markForLaterBtn.addEventListener('click', markForLater);
+        reviewLaterBtn.addEventListener('click', startReviewLater);
+
 
         // Initial setup
-        createLessonCheckboxes();
+        showLevelSelection();
     </script>
 
 </body>
