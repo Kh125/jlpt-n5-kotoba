@@ -7,25 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-tertiary: #3a3a3a;
+            --accent-primary: rgb(129 140 248);
+            --accent-hover: rgb(101 116 205);
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --border-color: #4a4a4a;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
         }
+
+        #app {
+            background: linear-gradient(145deg, var(--bg-secondary), #222222);
+            border: 1px solid var(--border-color);
+        }
+
         .card-container {
             perspective: 1000px;
         }
+
         .flashcard {
             position: relative;
             width: 100%;
             height: 100%;
             transform-style: preserve-3d;
-            transition: transform 0.6s;
+            transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
         }
+
         .flashcard.is-flipped {
             transform: rotateY(180deg);
         }
+
         .card-face {
             position: absolute;
             width: 100%;
@@ -37,16 +58,19 @@
             justify-content: center;
             padding: 1.5rem;
             border-radius: 1rem;
-            background-color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
         }
+
         .card-back {
             transform: rotateY(180deg);
-            background-color: #f3f4f6;
         }
+
         .finish-animation {
             animation: fadeInScale 0.8s ease-in-out forwards;
         }
+
         @keyframes fadeInScale {
             from {
                 opacity: 0;
@@ -57,6 +81,7 @@
                 transform: scale(1);
             }
         }
+
         .checkbox-container {
             position: relative;
             display: flex;
@@ -65,54 +90,118 @@
             width: 60px;
             height: 60px;
             border-radius: 9999px;
-            background-color: #f0f4f8;
-            border: 2px solid transparent;
+            background-color: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
+
         .checkbox-container:hover {
-            background-color: #e2e8f0;
+            background-color: #4a4a4a;
+            border-color: #6a6a6a;
         }
+
         .checkbox-container.selected {
-            background-color: #6366f1;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border-color: #4338ca;
+            background-color: var(--accent-primary);
+            box-shadow: 0 8px 15px rgba(0, 122, 255, 0.2);
+            border-color: var(--accent-primary);
         }
+        
         .checkbox-container.selected:hover {
-            background-color: #4f46e5;
+            background-color: var(--accent-hover);
         }
+
         .checkbox-container span {
             font-weight: 600;
-            color: #4a5568;
+            color: var(--text-secondary);
             font-size: 1.25rem;
-            transition: color 0.2s;
+            transition: color 0.3s ease;
         }
+
         .checkbox-container.selected span {
-            color: #ffffff;
+            color: white;
         }
-        #start-revision-btn:disabled, #start-bookmarks-revision-btn:disabled {
-            background-color: #cbd5e1;
-            cursor: not-allowed;
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            box-shadow: 0 8px 15px rgba(0, 122, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+             background-color: #4a4a4a;
+             border-color: #6a6a6a;
+             transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+             background-color: #ff9500;
+             color: white;
+        }
+        .btn-warning:hover {
+             background-color: #cc7a00;
+             transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-secondary) !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .back-btn {
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
+        .text-accent {
+            color: var(--accent-primary);
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+<body class="text-gray-200 flex items-center justify-center min-h-screen p-4">
 
     <!-- Main App Container -->
-    <div id="app" class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 md:p-10 flex flex-col items-center text-center">
+    <div id="app" class="w-full max-w-lg rounded-2xl shadow-2xl p-8 md:p-10 flex flex-col items-center text-center">
         
-        <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-600 mb-2">Kotoba Revision</h1>
-        <p class="text-gray-500 mb-8">Choose your revision style to begin.</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">Kotoba Revision</h1>
+        <p class="text-gray-400 mb-8">Choose your JLPT level to begin.</p>
 
         <!-- Level Selection Section -->
-        <div id="level-selection" class="w-full space-y-4">
-            <h2 class="text-xl font-bold mb-4">Select Level</h2>
+        <div id="level-selection" class="w-full space-y-6">
+            <h2 class="text-xl font-bold mb-4 text-white">Select Level</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button id="n5-level-btn" class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
+                <button id="n5-level-btn" class="btn btn-primary w-full">
                     N5 Lessons (1-25)
                 </button>
-                <button id="n4-level-btn" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-emerald-600 transition-colors">
+                <button id="n4-level-btn" class="btn btn-primary w-full" style="--accent-primary: #34c759; --accent-hover: #29a347;">
                     N4 Lessons (26-50)
                 </button>
             </div>
@@ -120,25 +209,26 @@
 
         <!-- Lesson Selection Section -->
         <div id="lesson-selection" class="w-full space-y-4 hidden">
-            <h2 class="text-xl font-bold mb-4">Select Lessons</h2>
+            <h2 class="text-xl font-bold mb-4 text-white">Select Lessons</h2>
             <div id="lesson-checkboxes" class="grid grid-cols-5 md:grid-cols-7 gap-4 justify-center">
                 <!-- Lesson checkboxes will be dynamically added here -->
             </div>
             
             <div class="flex flex-col items-center mt-6">
-                <button id="start-revision-btn" class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors w-full" disabled>
+                <button id="start-revision-btn" class="btn btn-primary w-full" disabled>
                     Start Revision
                 </button>
             </div>
-            <button id="back-to-levels-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
-                ← Back to Levels
+            <button id="back-to-levels-btn" class="back-btn mt-6">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Levels
             </button>
         </div>
         
         <!-- Bookmarks Section -->
-        <div id="bookmarks-section" class="w-full mt-8 hidden border-t-2 border-gray-200 pt-6">
-             <h2 class="text-xl font-bold mb-4">Bookmarks</h2>
-             <button id="start-bookmarks-revision-btn" class="bg-amber-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-amber-600 transition-colors w-full" disabled>
+        <div id="bookmarks-section" class="w-full mt-8 hidden border-t-2 border-gray-700 pt-6">
+             <h2 class="text-xl font-bold mb-4 text-white">Bookmarks</h2>
+             <button id="start-bookmarks-revision-btn" class="btn btn-warning w-full" disabled>
                  Revise Bookmarked Words (<span id="bookmarks-count">0</span>)
              </button>
         </div>
@@ -146,122 +236,90 @@
 
         <!-- Mode Selection Section -->
         <div id="mode-selection" class="w-full space-y-4 hidden relative">
-            <h2 class="text-xl font-bold mb-4">Choose a Revision Mode</h2>
+            <h2 class="text-xl font-bold mb-4 text-white">Choose a Revision Mode</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <button id="manual-word-mode-btn" class="mode-btn bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-emerald-600 transition-colors">
-                    Manual (Word First)
-                </button>
-                <button id="manual-meaning-mode-btn" class="mode-btn bg-rose-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-rose-600 transition-colors">
-                    Manual (Meaning First)
-                </button>
-                <button id="timed-word-mode-btn" class="mode-btn bg-sky-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-sky-600 transition-colors">
-                    Timed (Word First)
-                </button>
-                <button id="timed-meaning-mode-btn" class="mode-btn bg-purple-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-purple-600 transition-colors">
-                    Timed (Meaning First)
-                </button>
+                <button id="manual-word-mode-btn" class="btn btn-secondary w-full">Manual (Word)</button>
+                <button id="manual-meaning-mode-btn" class="btn btn-secondary w-full">Manual (Meaning)</button>
+                <button id="timed-word-mode-btn" class="btn btn-secondary w-full">Timed (Word)</button>
+                <button id="timed-meaning-mode-btn" class="btn btn-secondary w-full">Timed (Meaning)</button>
             </div>
-            <button id="list-view-btn" class="mode-btn bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors w-full">
-                List View
-            </button>
-
-            <!-- Customize Button is now centered and below the main mode buttons -->
-            <button id="customize-btn" class="w-full mt-4 text-indigo-500 font-semibold py-2 px-4 rounded-full border border-indigo-500 hover:bg-indigo-50 transition-colors">
-                Customize Timed Settings
-            </button>
+            <button id="list-view-btn" class="btn btn-secondary w-full">List View</button>
+            <button id="customize-btn" class="btn btn-secondary w-full mt-4 !border-dashed">Customize Timed Settings</button>
             
-            <button id="back-to-lessons-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
-                ← Back to Lessons
+            <button id="back-to-lessons-btn" class="back-btn mt-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Lessons
             </button>
         </div>
 
         <!-- Timer Settings Section -->
         <div id="settings-screen" class="w-full space-y-4 hidden">
-            <h2 class="text-xl font-bold text-gray-700">Customize Timed Mode</h2>
-            <p class="text-gray-500 text-sm mb-4">Set the timers for your timed revision sessions.</p>
+            <h2 class="text-xl font-bold text-white">Customize Timed Mode</h2>
+            <p class="text-gray-400 text-sm mb-4">Set the timers for your timed revision sessions.</p>
             <div class="flex flex-col sm:flex-row items-center gap-4">
                 <div class="flex-1 w-full">
-                    <label for="flip-delay" class="block text-sm font-medium text-gray-600 mb-1">Flip Delay (seconds)</label>
-                    <input type="number" id="flip-delay" value="3" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label for="flip-delay" class="block text-sm font-medium text-gray-400 mb-1">Flip Delay (s)</label>
+                    <input type="number" id="flip-delay" value="3" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-full text-center text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex-1 w-full">
-                    <label for="next-delay" class="block text-sm font-medium text-gray-600 mb-1">Next Card Delay (seconds)</label>
-                    <input type="number" id="next-delay" value="2" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label for="next-delay" class="block text-sm font-medium text-gray-400 mb-1">Next Card Delay (s)</label>
+                    <input type="number" id="next-delay" value="2" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-full text-center text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
-            <button id="back-from-settings-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
-                ← Back to Modes
+            <button id="back-from-settings-btn" class="back-btn mt-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Modes
             </button>
         </div>
 
         <!-- Flashcard & Revision Section -->
         <div id="revision-section" class="w-full hidden flex flex-col items-center">
-            
-            <!-- New Word Count Display -->
             <div class="mb-4 text-center">
-                <p id="progress-display" class="text-xl font-bold text-indigo-600"></p>
-                <p id="word-count-display" class="text-sm text-gray-500"></p>
+                <p id="progress-display" class="text-xl font-bold text-white"></p>
+                <p id="word-count-display" class="text-sm text-gray-400"></p>
             </div>
 
-            <!-- The Flashcard -->
-            <div class="card-container relative w-full max-w-sm h-56 mb-8">
+            <div class="card-container relative w-full max-w-sm h-64 mb-8">
                 <div id="flashcard" class="flashcard">
-                    <!-- Card Front -->
-                    <div id="card-front" class="card-face">
-                        <p id="card-front-text" class="text-2xl font-bold text-gray-700 mb-2"></p>
-                    </div>
-                    <!-- Card Back -->
-                    <div id="card-back" class="card-face card-back">
-                        <p id="card-back-text" class="text-2xl font-bold text-gray-700 mb-2"></p>
-                    </div>
+                    <div id="card-front" class="card-face"><p id="card-front-text"></p></div>
+                    <div id="card-back" class="card-face card-back"><p id="card-back-text"></p></div>
                 </div>
             </div>
 
-            <!-- Buttons for Revision -->
-            <div class="flex flex-col sm:flex-row gap-4 mb-4">
-                <button id="previous-word-btn" class="flex-1 bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors">
-                    Previous Word
-                </button>
-                <button id="pause-btn" class="flex-1 bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors">
-                    Pause
-                </button>
-                <button id="next-word-btn" class="flex-1 bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
-                    Next Word
-                </button>
+            <div class="flex w-full gap-4 mb-4">
+                <button id="previous-word-btn" class="btn btn-secondary flex-1">Prev</button>
+                <button id="pause-btn" class="btn btn-warning flex-1">Pause</button>
+                <button id="next-word-btn" class="btn btn-primary flex-1">Next</button>
             </div>
-            <button id="mark-for-later-btn" class="bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors w-full mt-4">
-                Bookmark Word
-            </button>
-            <button id="restart-btn" class="bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors w-full mt-4">
-                Restart
-            </button>
-            <button id="back-from-revision-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
-                ← Back to Lessons
+            <button id="mark-for-later-btn" class="btn btn-secondary w-full">Bookmark Word</button>
+            <button id="restart-btn" class="btn btn-secondary w-full mt-4">Restart</button>
+            <button id="back-from-revision-btn" class="back-btn mt-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Lessons
             </button>
 
-            <!-- Status Messages & Timer -->
-            <p id="timer-display" class="mt-2 font-medium text-sm text-gray-500"></p>
-            <p id="status-message" class="mt-4 font-bold text-lg"></p>
-
+            <p id="timer-display" class="mt-4 font-medium text-sm text-gray-400 h-5"></p>
+            <p id="status-message" class="mt-2 font-bold text-lg h-7"></p>
         </div>
 
         <!-- List View Section -->
         <div id="list-view-section" class="w-full hidden space-y-6">
-            <h2 class="text-2xl font-bold text-indigo-600">Vocabulary List</h2>
-            <div id="word-list-container" class="w-full space-y-4 text-left">
+            <h2 class="text-2xl font-bold text-white">Vocabulary List</h2>
+            <div id="word-list-container" class="w-full space-y-4 text-left max-h-96 overflow-y-auto pr-2">
                 <!-- Word list will be dynamically populated here -->
             </div>
-            <button id="back-from-list-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
-                ← Back to Lessons
+            <button id="back-from-list-btn" class="back-btn mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Lessons
             </button>
         </div>
 
         <!-- Finish Screen -->
         <div id="finish-screen" class="w-full hidden flex flex-col items-center justify-center h-full text-center">
-            <div class="finish-animation p-8 bg-white rounded-xl shadow-xl">
-                <p id="finish-message" class="text-3xl font-extrabold text-green-600 mb-2">🎉 Well Done! 🎉</p>
-                <p class="text-xl font-bold text-gray-700 mb-4">You've finished this set!</p>
-                <p id="finish-timer" class="text-gray-500">Returning to lessons in 5 seconds...</p>
+            <div class="finish-animation p-8 rounded-xl">
+                <p id="finish-message" class="text-4xl font-extrabold text-green-400 mb-2">🎉 Well Done! 🎉</p>
+                <p class="text-xl font-bold text-white mb-4">You've finished this set!</p>
+                <p id="finish-timer" class="text-gray-400">Returning in 5 seconds...</p>
             </div>
         </div>
 
@@ -269,7 +327,6 @@
 
     <script>
         // --- Vocabulary Data ---
-        // Restructured to support multiple levels
         const vocabularyData = {
             N5: {
                 "Lesson 1": [
@@ -952,7 +1009,7 @@
                     { kanji: "運動します", hiragana: "うんどうします", meaning: "to exercise", myanmar: "အားကစား လုပ်သည်" },
                     { kanji: "成功します", hiragana: "せいこうします", meaning: "to succeed", myanmar: "အောင်မြင်သည်" },
                     { kanji: "失敗します", hiragana: "しっぱいします", meaning: "to fail", myanmar: "မအောင်မြင်သည်" },
-                    { kanji: "合格します", hiragana: "ごうかくします", meaning: "to pass (an exam)", myanmar: "စာမေးပွဲ ಉತ್ತೀರ್ಣသည်" },
+                    { kanji: "合格します", hiragana: "ごうかくします", meaning: "to pass (an exam)", myanmar: "စာမေးပွဲ ಉತ್ತೀರ್ణသည်" },
                     { kanji: "やみます", hiragana: "やみます", meaning: "to stop (raining, snowing)", myanmar: "သွားပြီးနားသည် (မိုး၊ နှင်း)" },
                     { kanji: "戻ります", hiragana: "もどります", meaning: "to return", myanmar: "ပြန်သွားသည်" },
                     { kanji: "晴れます", hiragana: "はれます", meaning: "to clear up", myanmar: "မိုးကောင်းကင်ပြန်ဖြူသည်" },
@@ -1325,15 +1382,12 @@
         const wordListContainer = document.getElementById('word-list-container');
         const markForLaterBtn = document.getElementById('mark-for-later-btn');
         
-        // New DOM Elements for word count
         const progressDisplay = document.getElementById('progress-display');
         const wordCountDisplay = document.getElementById('word-count-display');
 
-        // New Level Selection Buttons
         const n5LevelBtn = document.getElementById('n5-level-btn');
         const n4LevelBtn = document.getElementById('n4-level-btn');
 
-        // New Bookmark elements
         const startBookmarksRevisionBtn = document.getElementById('start-bookmarks-revision-btn');
         const bookmarksCountSpan = document.getElementById('bookmarks-count');
 
@@ -1342,7 +1396,7 @@
         let selectedLevel = null;
         let selectedLessons = [];
         let bookmarkedWords = [];
-        let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning', 'list-view'
+        let currentMode = null; 
         let shuffledWords = [];
         let currentIndex = 0;
         let nextWordTimer = null;
@@ -1355,7 +1409,6 @@
 
         // --- Functions ---
         
-        // --- Bookmark & Local Storage Functions ---
         function loadBookmarks() {
             const savedBookmarks = localStorage.getItem('kotobaBookmarks');
             if (savedBookmarks) {
@@ -1377,43 +1430,38 @@
             const wordIndex = bookmarkedWords.findIndex(word => word.kanji === wordToToggle.kanji && word.meaning === wordToToggle.meaning);
 
             if (wordIndex > -1) {
-                // Remove bookmark
                 bookmarkedWords.splice(wordIndex, 1);
                  if(statusMessage) {
                     statusMessage.textContent = 'Bookmark removed!';
-                    statusMessage.className = 'mt-4 font-bold text-lg text-red-500';
+                    statusMessage.className = 'mt-2 font-bold text-lg h-7 text-red-400';
                 }
             } else {
-                // Add bookmark
                 bookmarkedWords.push(wordToToggle);
                  if(statusMessage) {
                     statusMessage.textContent = 'Word bookmarked!';
-                    statusMessage.className = 'mt-4 font-bold text-lg text-green-500';
+                    statusMessage.className = 'mt-2 font-bold text-lg h-7 text-green-400';
                 }
             }
 
             saveBookmarks();
-            renderBookmarksSection(); // Update the main list view
-            updateBookmarkButtonState(); // Update the button in the revision screen
+            renderBookmarksSection(); 
+            updateBookmarkButtonState();
         }
 
         function updateBookmarkButtonState() {
             const currentWord = shuffledWords[currentIndex];
             if (!currentWord || !markForLaterBtn) return;
-
             const isBookmarked = bookmarkedWords.some(word => word.kanji === currentWord.kanji && word.meaning === currentWord.meaning);
 
             if (isBookmarked) {
                 markForLaterBtn.textContent = 'Bookmarked';
-                markForLaterBtn.className = 'bg-amber-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-amber-600 transition-colors w-full mt-4';
+                markForLaterBtn.className = 'btn btn-warning w-full';
             } else {
                 markForLaterBtn.textContent = 'Bookmark Word';
-                markForLaterBtn.className = 'bg-sky-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-sky-600 transition-colors w-full mt-4';
+                markForLaterBtn.className = 'btn btn-secondary w-full';
             }
         }
 
-
-        // Fisher-Yates shuffle algorithm
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1427,7 +1475,6 @@
             
             const lessonKeys = Object.keys(vocabularyData[level]);
 
-            // Create 'All' checkbox first
             const allContainer = document.createElement('label');
             allContainer.classList.add('checkbox-container');
             allContainer.id = 'all-checkbox-container';
@@ -1445,7 +1492,6 @@
             allContainer.appendChild(allSpan);
             lessonCheckboxesContainer.appendChild(allContainer);
 
-            // Create individual lesson checkboxes
             lessonKeys.forEach(key => {
                 const container = document.createElement('label');
                 container.classList.add('checkbox-container');
@@ -1507,13 +1553,12 @@
                 cb.checked = false;
                 cb.closest('label').classList.remove('selected');
             });
-            const allLevelCheckbox = document.querySelector('input[name="lesson-' + level + '-all"]');
+            const allLevelCheckbox = document.querySelector(`input[name="lesson-${level}-all"]`);
             if (allLevelCheckbox) {
                 allLevelCheckbox.checked = false;
                 allLevelCheckbox.closest('label').classList.remove('selected');
             }
         }
-
 
         function showModeSelection() {
             lessonSelectionSection.classList.add('hidden');
@@ -1539,7 +1584,6 @@
                 const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
                 shuffledWords = shuffleArray(wordsToShuffle);
             }
-
             showModeSelection();
         }
 
@@ -1550,11 +1594,11 @@
             finishScreen.classList.add('hidden');
             
             if (currentMode.includes('timed')) {
-                pauseBtn.classList.remove('hidden');
-                markForLaterBtn.classList.add('hidden');
+                pauseBtn.style.display = '';
+                markForLaterBtn.style.display = 'none';
             } else {
-                pauseBtn.classList.add('hidden');
-                markForLaterBtn.classList.remove('hidden');
+                pauseBtn.style.display = 'none';
+                markForLaterBtn.style.display = '';
             }
 
             currentIndex = 0;
@@ -1575,12 +1619,12 @@
             const isWordFirst = currentMode.includes('word');
             
             const frontText = isWordFirst ? 
-                (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`) : 
-                `<span class="text-2xl text-sky-700">${currentWord?.myanmar ?? ""}</span><br><span class="text-3xl">${currentWord.meaning}</span>`;
+                (currentWord.dictionary ? `<span class="text-3xl text-accent">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl text-accent">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`) : 
+                `<span class="text-2xl" style="color: var(--text-secondary);">${currentWord?.myanmar ?? ""}</span><br><span class="text-3xl text-accent">${currentWord.meaning}</span>`;
             
             const backText = isWordFirst ? 
-                `<span class="text-2xl text-sky-700">${currentWord?.myanmar ?? ""}</span><br><span class="text-2xl">${currentWord.meaning}</span>` : 
-                (currentWord.dictionary ? `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`);
+                `<span class="text-2xl" style="color: var(--text-secondary);">${currentWord?.myanmar ?? ""}</span><br><span class="text-2xl text-accent">${currentWord.meaning}</span>` : 
+                (currentWord.dictionary ? `<span class="text-3xl text-accent">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span><br><span class="text-lg text-gray-500 mt-1">(${currentWord.dictionary})</span>` : `<span class="text-3xl text-accent">${currentWord.kanji}</span><br><span class="text-xl text-gray-400 mt-1">${currentWord.hiragana}</span>`);
 
             cardFrontText.innerHTML = frontText;
             cardBackText.innerHTML = backText;
@@ -1596,11 +1640,11 @@
                 finishScreen.classList.remove('hidden');
                 let finishTimerCounter = 5;
                 const finishTimerDisplay = document.getElementById('finish-timer');
-                finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                finishTimerDisplay.textContent = `Returning in ${finishTimerCounter} seconds...`;
                 
                 finishTimer = setInterval(() => {
                     finishTimerCounter--;
-                    finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                    finishTimerDisplay.textContent = `Returning in ${finishTimerCounter} seconds...`;
                     if (finishTimerCounter <= 0) {
                         clearInterval(finishTimer);
                         showLessonSelection(selectedLevel);
@@ -1610,7 +1654,6 @@
             }
 
             progressDisplay.textContent = `Word ${currentIndex + 1} of ${shuffledWords.length}`;
-
             const isCardFlipped = flashcard.classList.contains('is-flipped');
             
             if (isCardFlipped) {
@@ -1618,7 +1661,7 @@
                 setTimeout(() => {
                     updateCardDisplay();
                     startTimersIfNeeded();
-                }, 300); // Wait for half the transition to update content
+                }, 350);
             } else {
                 updateCardDisplay();
                 startTimersIfNeeded();
@@ -1630,12 +1673,6 @@
             
             previousWordBtn.disabled = currentIndex === 0 || currentMode.includes('timed');
             nextWordBtn.disabled = currentMode.includes('timed');
-
-            previousWordBtn.classList.toggle('bg-gray-300', currentMode.includes('timed') || currentIndex === 0);
-            previousWordBtn.classList.toggle('hover:bg-gray-400', currentMode.includes('timed') || currentIndex === 0);
-            nextWordBtn.classList.toggle('bg-gray-300', currentMode.includes('timed'));
-            nextWordBtn.classList.toggle('hover:bg-indigo-600', !currentMode.includes('timed'));
-            nextWordBtn.classList.toggle('cursor-not-allowed', currentMode.includes('timed'));
             
             isPaused = false;
             pauseBtn.textContent = 'Pause';
@@ -1643,19 +1680,19 @@
             if (currentMode.includes('timed')) {
                 isFlipped = false;
                 timerSecondsLeft = flipDelay;
-                timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                timerDisplay.textContent = `Flipping in ${timerSecondsLeft}s...`;
                 nextWordTimer = setInterval(() => {
                     if (!isPaused) {
                         timerSecondsLeft--;
                         if (!isFlipped) {
-                            timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                            timerDisplay.textContent = `Flipping in ${timerSecondsLeft}s...`;
                             if (timerSecondsLeft <= 0) {
                                 flashcard.classList.add('is-flipped');
                                 isFlipped = true;
                                 timerSecondsLeft = nextDelay;
                             }
                         } else {
-                            timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
+                            timerDisplay.textContent = `Next card in ${timerSecondsLeft}s...`;
                             if (timerSecondsLeft <= 0) {
                                 currentIndex++;
                                 displayCurrentCard();
@@ -1675,9 +1712,9 @@
                 pauseBtn.textContent = 'Pause';
                 if (currentMode.includes('timed')) {
                     if (!isFlipped) {
-                        timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                        timerDisplay.textContent = `Flipping in ${timerSecondsLeft}s...`;
                     } else {
-                        timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
+                        timerDisplay.textContent = `Next card in ${timerSecondsLeft}s...`;
                     }
                 }
             }
@@ -1688,33 +1725,33 @@
             modeSelectionSection.classList.add('hidden');
             listViewSection.classList.remove('hidden');
             
-            wordListContainer.innerHTML = ''; // Clear previous list
+            wordListContainer.innerHTML = '';
 
             shuffledWords.forEach((word) => {
                 const wordItem = document.createElement('div');
-                wordItem.classList.add('bg-gray-50', 'rounded-xl', 'p-4', 'shadow-sm', 'hover:bg-gray-100', 'transition-colors');
+                wordItem.className = 'bg-gray-800 rounded-xl p-4 border border-gray-700 hover:bg-gray-700 transition-colors';
                 
-                const kanjiHiragana = document.createElement('div');
-                kanjiHiragana.classList.add('text-lg', 'font-semibold', 'text-indigo-700');
-                kanjiHiragana.innerHTML = `${word.kanji} <span class="text-gray-500 font-normal">(${word.hiragana})</span>`;
+                const kanjiHiragana = document.createElement('p');
+                kanjiHiragana.className = 'text-lg font-semibold text-white';
+                kanjiHiragana.innerHTML = `${word.kanji} <span class="text-gray-400 font-normal">(${word.hiragana})</span>`;
                 
-                const meaning = document.createElement('div');
-                meaning.classList.add('text-gray-600', 'mt-1');
+                const meaning = document.createElement('p');
+                meaning.className = 'text-gray-300 mt-1';
                 meaning.textContent = word.meaning;
                 
                 wordItem.appendChild(kanjiHiragana);
                 wordItem.appendChild(meaning);
                 
                 if (word.dictionary) {
-                    const dictionary = document.createElement('div');
-                    dictionary.classList.add('text-sm', 'text-gray-400', 'mt-1');
+                    const dictionary = document.createElement('p');
+                    dictionary.className = 'text-sm text-gray-500 mt-1';
                     dictionary.textContent = `Dict: ${word.dictionary}`;
                     wordItem.appendChild(dictionary);
                 }
                 
                 if (word.myanmar) {
-                    const myanmar = document.createElement('div');
-                    myanmar.classList.add('text-sm', 'text-sky-700', 'mt-1');
+                    const myanmar = document.createElement('p');
+                    myanmar.className = 'text-sm text-blue-400 mt-1';
                     myanmar.textContent = `Myanmar: ${word.myanmar}`;
                     wordItem.appendChild(myanmar);
                 }
@@ -1723,7 +1760,6 @@
             });
         }
         
-        // --- Event Listeners ---
         function initializeApp() {
             loadBookmarks();
 
@@ -1731,26 +1767,30 @@
             n4LevelBtn.addEventListener('click', () => showLessonSelection('N4'));
             backToLevelsBtn.addEventListener('click', showLevelSelection);
 
-            lessonSelectionSection.addEventListener('change', (event) => {
+            lessonCheckboxesContainer.addEventListener('click', (event) => {
+                const target = event.target.closest('.checkbox-container');
+                if (!target) return;
+                
+                const checkbox = target.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                
                 const allCheckbox = document.querySelector(`input[name="lesson-${selectedLevel}-all"]`);
                 const lessonCheckboxes = document.querySelectorAll('input[name="lesson"]');
                 
-                if (event.target === allCheckbox) {
+                if (checkbox === allCheckbox) {
                     lessonCheckboxes.forEach(cb => {
                         cb.checked = allCheckbox.checked;
-                        cb.closest('label').classList.toggle('selected', allCheckbox.checked);
+                        cb.closest('.checkbox-container').classList.toggle('selected', allCheckbox.checked);
                     });
                 } else {
-                    const allChecked = Array.from(lessonCheckboxes).every(cb => cb.checked);
+                     const allChecked = Array.from(lessonCheckboxes).every(cb => cb.checked);
                     if (allCheckbox) {
                         allCheckbox.checked = allChecked;
-                        allCheckbox.closest('label').classList.toggle('selected', allChecked);
+                        allCheckbox.closest('.checkbox-container').classList.toggle('selected', allChecked);
                     }
                 }
                 
-                if (event.target.type === 'checkbox') {
-                    event.target.closest('label').classList.toggle('selected', event.target.checked);
-                }
+                target.classList.toggle('selected', checkbox.checked);
                 
                 const checkedCount = document.querySelectorAll('input[name="lesson"]:checked').length;
                 startRevisionBtn.disabled = checkedCount === 0;
@@ -1782,7 +1822,7 @@
                 clearTimers();
                 isPaused = false;
                 pauseBtn.textContent = 'Pause';
-                shuffledWords = shuffleArray(shuffledWords); // Just reshuffle the current set
+                shuffledWords = shuffleArray(shuffledWords);
                 startRevision(currentMode);
             });
 
@@ -1805,11 +1845,9 @@
             pauseBtn.addEventListener('click', togglePause);
             markForLaterBtn.addEventListener('click', () => toggleBookmark(shuffledWords[currentIndex]));
 
-            // Initial setup
             showLevelSelection();
         }
         
-        // --- Run the App ---
         document.addEventListener('DOMContentLoaded', initializeApp);
 
     </script>
