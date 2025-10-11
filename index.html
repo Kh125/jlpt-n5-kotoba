@@ -91,7 +91,7 @@
         .checkbox-container.selected span {
             color: #ffffff;
         }
-        #start-revision-btn:disabled {
+        #start-revision-btn:disabled, #start-bookmarks-revision-btn:disabled {
             background-color: #cbd5e1;
             cursor: not-allowed;
         }
@@ -134,6 +134,15 @@
                 ← Back to Levels
             </button>
         </div>
+        
+        <!-- Bookmarks Section -->
+        <div id="bookmarks-section" class="w-full mt-8 hidden border-t-2 border-gray-200 pt-6">
+             <h2 class="text-xl font-bold mb-4">Bookmarks</h2>
+             <button id="start-bookmarks-revision-btn" class="bg-amber-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-amber-600 transition-colors w-full" disabled>
+                 Revise Bookmarked Words (<span id="bookmarks-count">0</span>)
+             </button>
+        </div>
+
 
         <!-- Mode Selection Section -->
         <div id="mode-selection" class="w-full space-y-4 hidden relative">
@@ -154,9 +163,6 @@
             </div>
             <button id="list-view-btn" class="mode-btn bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors w-full">
                 List View
-            </button>
-            <button id="review-later-btn" class="mode-btn bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors w-full mt-4" disabled>
-                Review Marked Words (<span id="later-list-count">0</span>)
             </button>
 
             <!-- Customize Button is now centered and below the main mode buttons -->
@@ -219,15 +225,15 @@
                 <button id="pause-btn" class="flex-1 bg-yellow-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-yellow-600 transition-colors">
                     Pause
                 </button>
-                <button id="restart-btn" class="flex-1 bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors">
-                    Restart
-                </button>
                 <button id="next-word-btn" class="flex-1 bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-indigo-600 transition-colors">
                     Next Word
                 </button>
             </div>
             <button id="mark-for-later-btn" class="bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-red-600 transition-colors w-full mt-4">
-                Mark for later
+                Bookmark Word
+            </button>
+            <button id="restart-btn" class="bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-400 transition-colors w-full mt-4">
+                Restart
             </button>
             <button id="back-from-revision-btn" class="text-gray-500 font-medium hover:text-gray-700 transition-colors mt-4">
                 ← Back to Lessons
@@ -751,7 +757,7 @@
                     { kanji: "選びます", hiragana: "えらびます", meaning: "to choose; to select", myanmar: "ရွေးချယ်သည်" },
                     { kanji: "通います[大学に]", hiragana: "かよいます[だいがくに]", meaning: "to commute (to university)", myanmar: "တက္ကသိုလ်သို့ သွားလာသည်" },
                     { kanji: "メモします", hiragana: "メモします", meaning: "to take notes; to memo", myanmar: "မှတ်စုယူသည်" },
-                    { kanji: "真面目[な]", hiragana: "まじめ[な]", meaning: "serious; diligent", myanmar: "သင့်တော်သော၊ မျက်နှာမစွန်းသော" },
+                    { kanji: "真面目[な]", hiragana: "まじめ[な]", meaning: "serious; diligent", myanmar: "သင့်တော်သော၊ မျက်နှာမစွန်းသော" },
                     { kanji: "熱心[な]", hiragana: "ねっしん[な]", meaning: "enthusiastic; eager", myanmar: "အားထုတ်သည်" },
                     { kanji: "偉い", hiragana: "えらい", meaning: "great; admirable", myanmar: "ထူးချွန်သော" },
                     { kanji: "丁度いい", hiragana: "ちょうどいい", meaning: "just right; perfect", myanmar: "မှန်မှန်ကန်ကန်" },
@@ -896,7 +902,7 @@
                     { kanji: "～とか、～とか", hiragana: "～とか、～とか", meaning: "such as ~ and ~", myanmar: "ဥပမာ ~ နှင့် ~" },
                     { kanji: "まるい", hiragana: "まるい", meaning: "round", myanmar: "ဝိုင်းပုံ" },
                     { kanji: "ある～", hiragana: "ある～", meaning: "a certain ~; some ~", myanmar: "တစ်ခုသော ~" },
-                    { kanji: "ゆめをみます", hiragana: "ゆめをみます", meaning: "to dream", myanmar: "အိပ်မက်ကြည့်သည်" },
+                    { kanji: "ゆめをみます", hiragana: "ゆめをみます", meaning: "to dream", myanmar: "အိပ်မက်ကြည့်သည်" },
                     { kanji: "うれしい", hiragana: "うれしい", meaning: "happy; glad", myanmar: "ဝမ်းမြောက်သည်" },
                     { kanji: "いや[な]", hiragana: "いや[な]", meaning: "unpleasant; disagreeable", myanmar: "မကြိုက်သော" },
                     { kanji: "するとめがさめます", hiragana: "するとめがさめます", meaning: "then wake up", myanmar: "ထိုအခါ မျက်လုံးဖွင့်သည်" }
@@ -1286,6 +1292,7 @@
         // --- DOM Elements ---
         const levelSelectionSection = document.getElementById('level-selection');
         const lessonSelectionSection = document.getElementById('lesson-selection');
+        const bookmarksSection = document.getElementById('bookmarks-section');
         const modeSelectionSection = document.getElementById('mode-selection');
         const settingsScreen = document.getElementById('settings-screen');
         const revisionSection = document.getElementById('revision-section');
@@ -1317,9 +1324,7 @@
         const backFromListBtn = document.getElementById('back-from-list-btn');
         const wordListContainer = document.getElementById('word-list-container');
         const markForLaterBtn = document.getElementById('mark-for-later-btn');
-        const reviewLaterBtn = document.getElementById('review-later-btn');
-        const laterListCount = document.getElementById('later-list-count');
-
+        
         // New DOM Elements for word count
         const progressDisplay = document.getElementById('progress-display');
         const wordCountDisplay = document.getElementById('word-count-display');
@@ -1328,9 +1333,15 @@
         const n5LevelBtn = document.getElementById('n5-level-btn');
         const n4LevelBtn = document.getElementById('n4-level-btn');
 
+        // New Bookmark elements
+        const startBookmarksRevisionBtn = document.getElementById('start-bookmarks-revision-btn');
+        const bookmarksCountSpan = document.getElementById('bookmarks-count');
+
+
         // --- State Variables ---
         let selectedLevel = null;
         let selectedLessons = [];
+        let bookmarkedWords = [];
         let currentMode = null; // 'manual-word', 'manual-meaning', 'timed-word', 'timed-meaning', 'list-view'
         let shuffledWords = [];
         let currentIndex = 0;
@@ -1341,14 +1352,66 @@
         let timerSecondsLeft = 0;
         let flipDelay = 0;
         let nextDelay = 0;
-        let revisedLaterList = [];
 
         // --- Functions ---
         
-        function updateLaterListCount() {
-            laterListCount.textContent = revisedLaterList.length;
-            reviewLaterBtn.disabled = revisedLaterList.length === 0;
+        // --- Bookmark & Local Storage Functions ---
+        function loadBookmarks() {
+            const savedBookmarks = localStorage.getItem('kotobaBookmarks');
+            if (savedBookmarks) {
+                bookmarkedWords = JSON.parse(savedBookmarks);
+            }
         }
+
+        function saveBookmarks() {
+            localStorage.setItem('kotobaBookmarks', JSON.stringify(bookmarkedWords));
+        }
+        
+        function renderBookmarksSection() {
+            bookmarksCountSpan.textContent = bookmarkedWords.length;
+            startBookmarksRevisionBtn.disabled = bookmarkedWords.length === 0;
+        }
+
+        function toggleBookmark(wordToToggle) {
+            if (!wordToToggle) return;
+            const wordIndex = bookmarkedWords.findIndex(word => word.kanji === wordToToggle.kanji && word.meaning === wordToToggle.meaning);
+
+            if (wordIndex > -1) {
+                // Remove bookmark
+                bookmarkedWords.splice(wordIndex, 1);
+                 if(statusMessage) {
+                    statusMessage.textContent = 'Bookmark removed!';
+                    statusMessage.className = 'mt-4 font-bold text-lg text-red-500';
+                }
+            } else {
+                // Add bookmark
+                bookmarkedWords.push(wordToToggle);
+                 if(statusMessage) {
+                    statusMessage.textContent = 'Word bookmarked!';
+                    statusMessage.className = 'mt-4 font-bold text-lg text-green-500';
+                }
+            }
+
+            saveBookmarks();
+            renderBookmarksSection(); // Update the main list view
+            updateBookmarkButtonState(); // Update the button in the revision screen
+        }
+
+        function updateBookmarkButtonState() {
+            const currentWord = shuffledWords[currentIndex];
+            if (!currentWord || !markForLaterBtn) return;
+
+            const isBookmarked = bookmarkedWords.some(word => word.kanji === currentWord.kanji && word.meaning === currentWord.meaning);
+
+            if (isBookmarked) {
+                markForLaterBtn.textContent = 'Bookmarked';
+                markForLaterBtn.className = 'bg-amber-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-amber-600 transition-colors w-full mt-4';
+            } else {
+                markForLaterBtn.textContent = 'Bookmark Word';
+                markForLaterBtn.className = 'bg-sky-500 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-sky-600 transition-colors w-full mt-4';
+            }
+        }
+
 
         // Fisher-Yates shuffle algorithm
         function shuffleArray(array) {
@@ -1360,7 +1423,6 @@
         }
 
         function createLessonCheckboxes(level) {
-            // Clear existing checkboxes
             lessonCheckboxesContainer.innerHTML = '';
             
             const lessonKeys = Object.keys(vocabularyData[level]);
@@ -1374,6 +1436,7 @@
             allCheckbox.type = 'checkbox';
             allCheckbox.name = `lesson-${level}-all`;
             allCheckbox.value = 'all';
+            allCheckbox.className = 'hidden';
 
             const allSpan = document.createElement('span');
             allSpan.textContent = 'All';
@@ -1391,6 +1454,7 @@
                 checkbox.type = 'checkbox';
                 checkbox.name = 'lesson';
                 checkbox.value = key;
+                checkbox.className = 'hidden';
 
                 const span = document.createElement('span');
                 span.textContent = key.split(' ')[1];
@@ -1412,6 +1476,7 @@
             if (pauseBtn) pauseBtn.textContent = 'Pause';
             levelSelectionSection.classList.remove('hidden');
             lessonSelectionSection.classList.add('hidden');
+            bookmarksSection.classList.add('hidden');
             modeSelectionSection.classList.add('hidden');
             settingsScreen.classList.add('hidden');
             revisionSection.classList.add('hidden');
@@ -1419,7 +1484,6 @@
             finishScreen.classList.add('hidden');
             statusMessage.textContent = '';
             timerDisplay.textContent = '';
-            updateLaterListCount();
         }
 
         function showLessonSelection(level) {
@@ -1427,17 +1491,17 @@
             clearTimers();
             levelSelectionSection.classList.add('hidden');
             lessonSelectionSection.classList.remove('hidden');
+            bookmarksSection.classList.remove('hidden');
             modeSelectionSection.classList.add('hidden');
             settingsScreen.classList.add('hidden');
             revisionSection.classList.add('hidden');
             listViewSection.classList.add('hidden');
             finishScreen.classList.add('hidden');
             
-            // Re-generate checkboxes for the selected level
             createLessonCheckboxes(level);
-            startRevisionBtn.disabled = true; // Disable button until a lesson is selected
+            renderBookmarksSection();
+            startRevisionBtn.disabled = true; 
             
-            // Manually remove selected classes and check states
             const allCheckboxes = document.querySelectorAll('input[name="lesson"]');
             allCheckboxes.forEach(cb => {
                 cb.checked = false;
@@ -1453,6 +1517,7 @@
 
         function showModeSelection() {
             lessonSelectionSection.classList.add('hidden');
+            bookmarksSection.classList.add('hidden');
             modeSelectionSection.classList.remove('hidden');
             settingsScreen.classList.add('hidden');
             revisionSection.classList.add('hidden');
@@ -1464,15 +1529,16 @@
             settingsScreen.classList.remove('hidden');
         }
         
-        function handleStartRevision() {
-            selectedLessons = Array.from(document.querySelectorAll('input[name="lesson"]:checked')).map(cb => cb.value);
-            
-            if (selectedLessons.length === 0) {
-                return;
+        function handleStartRevision(isFromBookmarks = false) {
+             if (isFromBookmarks) {
+                if (bookmarkedWords.length === 0) return;
+                shuffledWords = shuffleArray([...bookmarkedWords]);
+            } else {
+                selectedLessons = Array.from(document.querySelectorAll('input[name="lesson"]:checked')).map(cb => cb.value);
+                if (selectedLessons.length === 0) return;
+                const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
+                shuffledWords = shuffleArray(wordsToShuffle);
             }
-            
-            const wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
-            shuffledWords = shuffleArray(wordsToShuffle);
 
             showModeSelection();
         }
@@ -1518,87 +1584,86 @@
 
             cardFrontText.innerHTML = frontText;
             cardBackText.innerHTML = backText;
+            
+            updateBookmarkButtonState();
         }
 
         function displayCurrentCard() {
             clearTimers();
             
-            progressDisplay.textContent = `Word ${currentIndex + 1} of ${shuffledWords.length}`;
-
-            // Check if the card is currently flipped
-            const isCardFlipped = flashcard.classList.contains('is-flipped');
-            
-            // If the card is flipped, un-flip it first
-            if (isCardFlipped) {
-                flashcard.classList.remove('is-flipped');
-                // Wait for the transition to finish before updating content
-                setTimeout(() => {
-                    updateCardDisplay();
-                }, 600); // Wait for the 0.6s transition
-            } else {
-                // If not flipped, update content immediately
-                updateCardDisplay();
+            if (currentIndex >= shuffledWords.length) {
+                revisionSection.classList.add('hidden');
+                finishScreen.classList.remove('hidden');
+                let finishTimerCounter = 5;
+                const finishTimerDisplay = document.getElementById('finish-timer');
+                finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                
+                finishTimer = setInterval(() => {
+                    finishTimerCounter--;
+                    finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
+                    if (finishTimerCounter <= 0) {
+                        clearInterval(finishTimer);
+                        showLessonSelection(selectedLevel);
+                    }
+                }, 1000);
+                return;
             }
 
-            // The rest of the logic can run after the display is updated
-            setTimeout(() => {
-                statusMessage.textContent = '';
-                
-                if (currentIndex >= shuffledWords.length) {
-                    revisionSection.classList.add('hidden');
-                    finishScreen.classList.remove('hidden');
-                    let finishTimerCounter = 5;
-                    const finishTimerDisplay = document.getElementById('finish-timer');
-                    finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
-                    
-                    finishTimer = setInterval(() => {
-                        finishTimerCounter--;
-                        finishTimerDisplay.textContent = `Returning to lessons in ${finishTimerCounter} seconds...`;
-                        if (finishTimerCounter <= 0) {
-                            clearInterval(finishTimer);
-                            showLessonSelection(selectedLevel);
-                        }
-                    }, 1000);
-                    return;
-                }
+            progressDisplay.textContent = `Word ${currentIndex + 1} of ${shuffledWords.length}`;
 
-                previousWordBtn.disabled = currentIndex === 0 || currentMode.includes('timed');
-                nextWordBtn.disabled = currentMode.includes('timed');
+            const isCardFlipped = flashcard.classList.contains('is-flipped');
+            
+            if (isCardFlipped) {
+                flashcard.classList.remove('is-flipped');
+                setTimeout(() => {
+                    updateCardDisplay();
+                    startTimersIfNeeded();
+                }, 300); // Wait for half the transition to update content
+            } else {
+                updateCardDisplay();
+                startTimersIfNeeded();
+            }
+        }
+        
+        function startTimersIfNeeded(){
+            statusMessage.textContent = '';
+            
+            previousWordBtn.disabled = currentIndex === 0 || currentMode.includes('timed');
+            nextWordBtn.disabled = currentMode.includes('timed');
 
-                previousWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed') || currentIndex === 0);
-                previousWordBtn.classList.toggle('hover:bg-gray-400', currentMode.includes('timed') || currentIndex === 0);
-                nextWordBtn.classList.toggle('bg-gray-500', currentMode.includes('timed'));
-                nextWordBtn.classList.toggle('hover:bg-indigo-600', !currentMode.includes('timed'));
-                nextWordBtn.classList.toggle('cursor-not-allowed', currentMode.includes('timed'));
-                
-                isPaused = false;
-                pauseBtn.textContent = 'Pause';
-                
-                if (currentMode.includes('timed')) {
-                    isFlipped = false;
-                    timerSecondsLeft = flipDelay;
-                    timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
-                    nextWordTimer = setInterval(() => {
-                        if (!isPaused) {
-                            timerSecondsLeft--;
-                            if (!isFlipped) {
-                                timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
-                                if (timerSecondsLeft <= 0) {
-                                    flashcard.classList.add('is-flipped');
-                                    isFlipped = true;
-                                    timerSecondsLeft = nextDelay;
-                                }
-                            } else {
-                                timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
-                                if (timerSecondsLeft <= 0) {
-                                    currentIndex++;
-                                    displayCurrentCard();
-                                }
+            previousWordBtn.classList.toggle('bg-gray-300', currentMode.includes('timed') || currentIndex === 0);
+            previousWordBtn.classList.toggle('hover:bg-gray-400', currentMode.includes('timed') || currentIndex === 0);
+            nextWordBtn.classList.toggle('bg-gray-300', currentMode.includes('timed'));
+            nextWordBtn.classList.toggle('hover:bg-indigo-600', !currentMode.includes('timed'));
+            nextWordBtn.classList.toggle('cursor-not-allowed', currentMode.includes('timed'));
+            
+            isPaused = false;
+            pauseBtn.textContent = 'Pause';
+            
+            if (currentMode.includes('timed')) {
+                isFlipped = false;
+                timerSecondsLeft = flipDelay;
+                timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                nextWordTimer = setInterval(() => {
+                    if (!isPaused) {
+                        timerSecondsLeft--;
+                        if (!isFlipped) {
+                            timerDisplay.textContent = `Flipping in ${timerSecondsLeft} seconds...`;
+                            if (timerSecondsLeft <= 0) {
+                                flashcard.classList.add('is-flipped');
+                                isFlipped = true;
+                                timerSecondsLeft = nextDelay;
+                            }
+                        } else {
+                            timerDisplay.textContent = `Next card in ${timerSecondsLeft} seconds...`;
+                            if (timerSecondsLeft <= 0) {
+                                currentIndex++;
+                                displayCurrentCard();
                             }
                         }
-                    }, 1000);
-                }
-            }, isCardFlipped ? 600 : 0); // Use the correct delay here
+                    }
+                }, 1000);
+            }
         }
 
         function togglePause() {
@@ -1618,7 +1683,6 @@
             }
         }
 
-        // NEW: Function to display words in a list view
         function startListView() {
             currentMode = 'list-view';
             modeSelectionSection.classList.add('hidden');
@@ -1626,10 +1690,7 @@
             
             wordListContainer.innerHTML = ''; // Clear previous list
 
-            // Use shuffledWords from the latest selection
-            const wordsToList = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
-
-            wordsToList.forEach((word) => {
+            shuffledWords.forEach((word) => {
                 const wordItem = document.createElement('div');
                 wordItem.classList.add('bg-gray-50', 'rounded-xl', 'p-4', 'shadow-sm', 'hover:bg-gray-100', 'transition-colors');
                 
@@ -1662,140 +1723,95 @@
             });
         }
         
-        // NEW: Function to mark a word for later revision
-        function markForLater() {
-            const currentWord = shuffledWords[currentIndex];
-            if (currentWord) {
-                const isAlreadyMarked = revisedLaterList.some(word => word.kanji === currentWord.kanji);
-                if (!isAlreadyMarked) {
-                    revisedLaterList.push(currentWord);
-                    statusMessage.textContent = 'Word added to "Review Marked Words" list!';
-                    statusMessage.classList.remove('text-red-500');
-                    statusMessage.classList.add('text-green-500');
-                } else {
-                    statusMessage.textContent = 'This word is already in your list!';
-                    statusMessage.classList.remove('text-green-500');
-                    statusMessage.classList.add('text-red-500');
-                }
-                updateLaterListCount();
-            }
-        }
-
-        // NEW: Function to start a session with marked words
-        function startReviewLater() {
-            shuffledWords = [...revisedLaterList];
-            currentMode = 'manual-word'; // Or another default mode for marked words
-            modeSelectionSection.classList.add('hidden');
-            revisionSection.classList.remove('hidden');
-            
-            // Re-hide pause button and show mark button
-            pauseBtn.classList.add('hidden');
-            markForLaterBtn.classList.remove('hidden');
-            
-            currentIndex = 0;
-            isPaused = false;
-            isFlipped = false;
-            
-            wordCountDisplay.textContent = `Total words: ${shuffledWords.length}`;
-            displayCurrentCard();
-        }
-
         // --- Event Listeners ---
-        // New Level Selection event listeners
-        n5LevelBtn.addEventListener('click', () => showLessonSelection('N5'));
-        n4LevelBtn.addEventListener('click', () => showLessonSelection('N4'));
-        backToLevelsBtn.addEventListener('click', showLevelSelection);
+        function initializeApp() {
+            loadBookmarks();
 
-        // Lesson Checkbox logic (updated to handle 'All' dynamically)
-        lessonSelectionSection.addEventListener('change', (event) => {
-            const allCheckbox = document.querySelector(`input[name="lesson-${selectedLevel}-all"]`);
-            const lessonCheckboxes = document.querySelectorAll('input[name="lesson"]');
-            
-            // Handle 'All' checkbox
-            if (event.target === allCheckbox) {
-                lessonCheckboxes.forEach(cb => {
-                    cb.checked = allCheckbox.checked;
-                    cb.closest('label').classList.toggle('selected', allCheckbox.checked);
-                });
-            } else {
-                // If any individual lesson is unchecked, uncheck 'All'
-                const allChecked = Array.from(lessonCheckboxes).every(cb => cb.checked);
-                if (allCheckbox) {
-                    allCheckbox.checked = allChecked;
-                    allCheckbox.closest('label').classList.toggle('selected', allChecked);
+            n5LevelBtn.addEventListener('click', () => showLessonSelection('N5'));
+            n4LevelBtn.addEventListener('click', () => showLessonSelection('N4'));
+            backToLevelsBtn.addEventListener('click', showLevelSelection);
+
+            lessonSelectionSection.addEventListener('change', (event) => {
+                const allCheckbox = document.querySelector(`input[name="lesson-${selectedLevel}-all"]`);
+                const lessonCheckboxes = document.querySelectorAll('input[name="lesson"]');
+                
+                if (event.target === allCheckbox) {
+                    lessonCheckboxes.forEach(cb => {
+                        cb.checked = allCheckbox.checked;
+                        cb.closest('label').classList.toggle('selected', allCheckbox.checked);
+                    });
+                } else {
+                    const allChecked = Array.from(lessonCheckboxes).every(cb => cb.checked);
+                    if (allCheckbox) {
+                        allCheckbox.checked = allChecked;
+                        allCheckbox.closest('label').classList.toggle('selected', allChecked);
+                    }
                 }
-            }
+                
+                if (event.target.type === 'checkbox') {
+                    event.target.closest('label').classList.toggle('selected', event.target.checked);
+                }
+                
+                const checkedCount = document.querySelectorAll('input[name="lesson"]:checked').length;
+                startRevisionBtn.disabled = checkedCount === 0;
+            });
+
+            startRevisionBtn.addEventListener('click', () => handleStartRevision(false));
+            startBookmarksRevisionBtn.addEventListener('click', () => handleStartRevision(true));
+
+            customizeBtn.addEventListener('click', showSettingsScreen);
+            backFromSettingsBtn.addEventListener('click', showModeSelection);
+            listViewBtn.addEventListener('click', startListView);
+
+            manualWordModeBtn.addEventListener('click', () => startRevision('manual-word'));
+            manualMeaningModeBtn.addEventListener('click', () => startRevision('manual-meaning'));
+            timedWordModeBtn.addEventListener('click', () => startRevision('timed-word'));
+            timedMeaningModeBtn.addEventListener('click', () => startRevision('timed-meaning'));
+
+            flashcard.addEventListener('click', () => {
+                if (!currentMode.includes('timed')) {
+                    flashcard.classList.toggle('is-flipped');
+                }
+            });
+
+            backToLessonsBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
+            backFromRevisionBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
+            backFromListBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
             
-            // Update the 'selected' class for the clicked checkbox container
-            if (event.target.type === 'checkbox') {
-                event.target.closest('label').classList.toggle('selected', event.target.checked);
-            }
+            restartBtn.addEventListener('click', () => {
+                clearTimers();
+                isPaused = false;
+                pauseBtn.textContent = 'Pause';
+                shuffledWords = shuffleArray(shuffledWords); // Just reshuffle the current set
+                startRevision(currentMode);
+            });
+
+            nextWordBtn.addEventListener('click', () => {
+                clearTimers();
+                if (currentIndex < shuffledWords.length) {
+                    currentIndex++;
+                    displayCurrentCard();
+                }
+            });
+
+            previousWordBtn.addEventListener('click', () => {
+                clearTimers();
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    displayCurrentCard();
+                }
+            });
             
-            const checkedCount = document.querySelectorAll('input[name="lesson"]:checked').length;
-            startRevisionBtn.disabled = checkedCount === 0;
-        });
+            pauseBtn.addEventListener('click', togglePause);
+            markForLaterBtn.addEventListener('click', () => toggleBookmark(shuffledWords[currentIndex]));
 
-        startRevisionBtn.addEventListener('click', handleStartRevision);
-        customizeBtn.addEventListener('click', showSettingsScreen);
-        backFromSettingsBtn.addEventListener('click', showModeSelection);
-        listViewBtn.addEventListener('click', startListView);
-
-        manualWordModeBtn.addEventListener('click', () => startRevision('manual-word'));
-        manualMeaningModeBtn.addEventListener('click', () => startRevision('manual-meaning'));
-        timedWordModeBtn.addEventListener('click', () => startRevision('timed-word'));
-        timedMeaningModeBtn.addEventListener('click', () => startRevision('timed-meaning'));
-
-        flashcard.addEventListener('click', () => {
-            if (!currentMode.includes('timed')) {
-                flashcard.classList.toggle('is-flipped');
-            }
-        });
-
-        backToLessonsBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
-        backFromRevisionBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
-        backFromListBtn.addEventListener('click', () => showLessonSelection(selectedLevel));
+            // Initial setup
+            showLevelSelection();
+        }
         
-        restartBtn.addEventListener('click', () => {
-            clearTimers();
-            isPaused = false;
-            pauseBtn.textContent = 'Pause';
-            
-            let wordsToShuffle = [];
-            if (shuffledWords.some(word => revisedLaterList.includes(word))) {
-                // We're reviewing the marked list, so we restart with it.
-                wordsToShuffle = [...revisedLaterList];
-            } else {
-                // We're reviewing lessons, so restart with the original selection.
-                wordsToShuffle = selectedLessons.flatMap(lessonKey => vocabularyData[selectedLevel][lessonKey]);
-            }
-            
-            shuffledWords = shuffleArray(wordsToShuffle);
-            startRevision(currentMode);
-        });
+        // --- Run the App ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
 
-        nextWordBtn.addEventListener('click', () => {
-            clearTimers();
-            if (currentIndex < shuffledWords.length - 1) {
-                currentIndex++;
-                displayCurrentCard();
-            }
-        });
-
-        previousWordBtn.addEventListener('click', () => {
-            clearTimers();
-            if (currentIndex > 0) {
-                currentIndex--;
-                displayCurrentCard();
-            }
-        });
-        
-        pauseBtn.addEventListener('click', togglePause);
-        markForLaterBtn.addEventListener('click', markForLater);
-        reviewLaterBtn.addEventListener('click', startReviewLater);
-
-
-        // Initial setup
-        showLevelSelection();
     </script>
 
 </body>
