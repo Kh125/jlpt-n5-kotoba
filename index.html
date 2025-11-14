@@ -32,6 +32,10 @@
             border: 1px solid var(--border-color);
         }
 
+        #app.app--wide {
+            max-width: min(100%, 64rem);
+        }
+
         .card-container {
             perspective: 1000px;
         }
@@ -193,6 +197,62 @@
 
         .text-accent {
             color: var(--accent-primary);
+        }
+
+        #column-toggle-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        #column-toggle-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        #column-toggle-controls label:hover {
+            background-color: rgba(129, 140, 248, 0.12);
+            border-color: var(--accent-primary);
+        }
+
+        #column-toggle-controls input {
+            accent-color: var(--accent-primary);
+        }
+
+        #word-list-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #word-list-table th,
+        #word-list-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        #word-list-table thead {
+            position: sticky;
+            top: 0;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(6px);
+            z-index: 1;
+        }
+
+        #word-list-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        #word-list-table tbody tr:hover {
+            background-color: rgba(129, 140, 248, 0.08);
         }
     </style>
 </head>
@@ -359,8 +419,28 @@
         <!-- List View Section -->
         <div id="list-view-section" class="w-full hidden space-y-6">
             <h2 class="text-2xl font-bold text-white">Vocabulary List</h2>
-            <div id="word-list-container" class="w-full space-y-4 text-left max-h-96 overflow-y-auto pr-2">
-                <!-- Word list will be dynamically populated here -->
+            <div id="word-list-container" class="w-full space-y-4 text-left">
+                <div id="column-toggle-controls" class="flex flex-wrap gap-3">
+                    <label><input type="checkbox" data-column-toggle="kanji" checked /> Kanji</label>
+                    <label><input type="checkbox" data-column-toggle="hiragana" checked /> Hiragana</label>
+                    <label><input type="checkbox" data-column-toggle="dictionary" checked /> Dictionary</label>
+                    <label><input type="checkbox" data-column-toggle="meaning" checked /> Meaning</label>
+                    <label><input type="checkbox" data-column-toggle="myanmar" checked /> Myanmar</label>
+                </div>
+                <div class="max-h-96 overflow-y-auto border border-gray-700 rounded-xl">
+                    <table id="word-list-table">
+                        <thead>
+                            <tr>
+                                <th class="kanji-column text-white text-sm uppercase tracking-wide">Kanji</th>
+                                <th class="hiragana-column text-white text-sm uppercase tracking-wide">Hiragana</th>
+                                <th class="dictionary-column text-white text-sm uppercase tracking-wide">Dictionary</th>
+                                <th class="meaning-column text-white text-sm uppercase tracking-wide">Meaning</th>
+                                <th class="myanmar-column text-white text-sm uppercase tracking-wide">Myanmar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="word-list-body"></tbody>
+                    </table>
+                </div>
             </div>
             <button id="back-from-list-btn" class="back-btn mt-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -11014,6 +11094,7 @@
         const revisionSection = document.getElementById("revision-section");
         const listViewSection = document.getElementById("list-view-section");
         const finishScreen = document.getElementById("finish-screen");
+        const appContainer = document.getElementById("app");
         const lessonCheckboxesContainer =
             document.getElementById("lesson-checkboxes");
         const startRevisionBtn = document.getElementById("start-revision-btn");
@@ -11047,7 +11128,8 @@
         const pauseBtn = document.getElementById("pause-btn");
         const listViewBtn = document.getElementById("list-view-btn");
         const backFromListBtn = document.getElementById("back-from-list-btn");
-        const wordListContainer = document.getElementById("word-list-container");
+        const wordListBody = document.getElementById("word-list-body");
+        const columnToggleInputs = document.querySelectorAll("[data-column-toggle]");
         const markForLaterBtn = document.getElementById("mark-for-later-btn");
 
         const progressDisplay = document.getElementById("progress-display");
@@ -11060,6 +11142,8 @@
             "start-bookmarks-revision-btn"
         );
         const bookmarksCountSpan = document.getElementById("bookmarks-count");
+
+        const COLUMN_TOGGLE_STORAGE_KEY = "kotobaListViewColumnState";
 
         // --- State Variables ---
         let selectedLevel = null;
@@ -11143,6 +11227,50 @@
             }
         }
 
+        function applyColumnVisibility() {
+            columnToggleInputs.forEach((toggle) => {
+                const columnClass = `${toggle.dataset.columnToggle}-column`;
+                const cells = document.querySelectorAll(`.${columnClass}`);
+                cells.forEach((cell) => {
+                    cell.classList.toggle("hidden", !toggle.checked);
+                });
+            });
+        }
+
+        function loadColumnToggleState() {
+            const savedState = localStorage.getItem(COLUMN_TOGGLE_STORAGE_KEY);
+            if (!savedState) return;
+
+            try {
+                const parsedState = JSON.parse(savedState);
+                columnToggleInputs.forEach((toggle) => {
+                    const key = toggle.dataset.columnToggle;
+                    if (Object.prototype.hasOwnProperty.call(parsedState, key)) {
+                        toggle.checked = parsedState[key];
+                    }
+                });
+            } catch (error) {
+                console.warn("Failed to parse stored column preferences:", error);
+            }
+        }
+
+        function saveColumnToggleState() {
+            const state = {};
+            columnToggleInputs.forEach((toggle) => {
+                state[toggle.dataset.columnToggle] = toggle.checked;
+            });
+
+            localStorage.setItem(
+                COLUMN_TOGGLE_STORAGE_KEY,
+                JSON.stringify(state)
+            );
+        }
+
+        function setAppWidth(isWide) {
+            if (!appContainer) return;
+            appContainer.classList.toggle("app--wide", Boolean(isWide));
+        }
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -11201,6 +11329,7 @@
             clearTimers();
             isPaused = false;
             if (pauseBtn) pauseBtn.textContent = "Pause";
+            setAppWidth(false);
             levelSelectionSection.classList.remove("hidden");
             lessonSelectionSection.classList.add("hidden");
             bookmarksSection.classList.add("hidden");
@@ -11216,6 +11345,7 @@
         function showLessonSelection(level) {
             selectedLevel = level;
             clearTimers();
+            setAppWidth(false);
             levelSelectionSection.classList.add("hidden");
             lessonSelectionSection.classList.remove("hidden");
             bookmarksSection.classList.remove("hidden");
@@ -11244,6 +11374,7 @@
         }
 
         function showModeSelection() {
+            setAppWidth(false);
             lessonSelectionSection.classList.add("hidden");
             bookmarksSection.classList.add("hidden");
             modeSelectionSection.classList.remove("hidden");
@@ -11253,6 +11384,7 @@
         }
 
         function showSettingsScreen() {
+            setAppWidth(false);
             modeSelectionSection.classList.add("hidden");
             settingsScreen.classList.remove("hidden");
         }
@@ -11276,6 +11408,7 @@
 
         function startRevision(mode) {
             currentMode = mode;
+            setAppWidth(false);
             modeSelectionSection.classList.add("hidden");
             revisionSection.classList.remove("hidden");
             finishScreen.classList.add("hidden");
@@ -11421,45 +11554,60 @@
             currentMode = "list-view";
             modeSelectionSection.classList.add("hidden");
             listViewSection.classList.remove("hidden");
+            setAppWidth(true);
 
-            wordListContainer.innerHTML = "";
+            if (!wordListBody) return;
+
+            wordListBody.innerHTML = "";
+
+            const safeText = (value) =>
+                value === undefined || value === null || value === "" ? "—" : value;
 
             shuffledWords.forEach((word) => {
-                const wordItem = document.createElement("div");
-                wordItem.className =
-                    "bg-gray-800 rounded-xl p-4 border border-gray-700 hover:bg-gray-700 transition-colors";
+                const tr = document.createElement("tr");
 
-                const kanjiHiragana = document.createElement("p");
-                kanjiHiragana.className = "text-lg font-semibold text-white";
-                kanjiHiragana.innerHTML = `${word.kanji} <span class="text-gray-400 font-normal">(${word.hiragana})</span>`;
+                const kanjiCell = document.createElement("td");
+                kanjiCell.className = "kanji-column text-gray-100";
+                kanjiCell.textContent = safeText(word.kanji);
+                tr.appendChild(kanjiCell);
 
-                const meaning = document.createElement("p");
-                meaning.className = "text-gray-300 mt-1";
-                meaning.textContent = word.meaning;
+                const hiraganaCell = document.createElement("td");
+                hiraganaCell.className = "hiragana-column text-gray-300";
+                hiraganaCell.textContent = safeText(word.hiragana);
+                tr.appendChild(hiraganaCell);
 
-                wordItem.appendChild(kanjiHiragana);
-                wordItem.appendChild(meaning);
+                const dictionaryCell = document.createElement("td");
+                dictionaryCell.className = "dictionary-column text-gray-400";
+                dictionaryCell.textContent = safeText(word.dictionary);
+                tr.appendChild(dictionaryCell);
 
-                if (word.dictionary) {
-                    const dictionary = document.createElement("p");
-                    dictionary.className = "text-sm text-gray-500 mt-1";
-                    dictionary.textContent = `Dict: ${word.dictionary}`;
-                    wordItem.appendChild(dictionary);
-                }
+                const meaningCell = document.createElement("td");
+                meaningCell.className = "meaning-column text-gray-100";
+                meaningCell.textContent = safeText(word.meaning);
+                tr.appendChild(meaningCell);
 
-                if (word.myanmar) {
-                    const myanmar = document.createElement("p");
-                    myanmar.className = "text-sm text-blue-400 mt-1";
-                    myanmar.textContent = `Myanmar: ${word.myanmar}`;
-                    wordItem.appendChild(myanmar);
-                }
+                const myanmarCell = document.createElement("td");
+                myanmarCell.className = "myanmar-column text-blue-300";
+                myanmarCell.textContent = safeText(word.myanmar);
+                tr.appendChild(myanmarCell);
 
-                wordListContainer.appendChild(wordItem);
+                wordListBody.appendChild(tr);
             });
+
+            applyColumnVisibility();
         }
 
         function initializeApp() {
             loadBookmarks();
+            loadColumnToggleState();
+            applyColumnVisibility();
+
+            columnToggleInputs.forEach((input) => {
+                input.addEventListener("change", () => {
+                    saveColumnToggleState();
+                    applyColumnVisibility();
+                });
+            });
 
             n5LevelBtn.addEventListener("click", () => showLessonSelection("N5"));
             n4LevelBtn.addEventListener("click", () => showLessonSelection("N4"));
@@ -11532,9 +11680,10 @@
             );
 
             flashcard.addEventListener("click", () => {
-                if (!currentMode.includes("timed")) {
-                    flashcard.classList.toggle("is-flipped");
+                if (!currentMode || currentMode.includes("timed")) {
+                    return;
                 }
+                flashcard.classList.toggle("is-flipped");
             });
 
             backToLessonsBtn.addEventListener("click", () =>
